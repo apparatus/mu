@@ -53,3 +53,6 @@ module.exports = function (mu, transports) {
   }
 }
 
+module.exports.epithet = 'tee'
+module.exports.type = 'adapter'
+

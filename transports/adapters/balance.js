@@ -58,3 +58,7 @@ module.exports = function (mu, transports) {
   }
 }
 
+
+module.exports.epithet = 'balance'
+module.exports.type = 'adapter'
+

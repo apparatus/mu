@@ -22,7 +22,7 @@ var teeAdapter = require('./adapters/tee')
 
 module.exports = function (mu, transport) {
   function func (options) { return transport(mu, funcDriver(mu, options)) }
-  function tcp (options) { return transport(mu, tcpDriver(mu.log, options)) }
+  function tcp (options) { return transport(mu, tcpDriver(mu, options)) }
   function balance (transports) { return balanceAdapter(mu, transports) }
   function tee (transports) { return teeAdapter(mu, transports) }
 
