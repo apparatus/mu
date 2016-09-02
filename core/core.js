@@ -47,6 +47,18 @@ module.exports = function (options) {
 
 
 
+  function inbound (pattern, tf) {
+    define(pattern, tf)
+  }
+
+
+
+  function outbound (pattern, tf) {
+    define(pattern, tf)
+  }
+
+
+
   function dispatch (message, cb) {
     var hash
     var digest
@@ -82,9 +94,12 @@ module.exports = function (options) {
 
 
   var instance = {
+    inbound: inbound,
+    outbound: outbound,
     define: define,
     dispatch: dispatch,
     tearDown: tearDown,
+
     print: print,
     log: logger,
     transportList: function () { return router.transportList() }
