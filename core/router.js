@@ -154,7 +154,9 @@ module.exports = function (logger) {
 
   var tearDown = function tearDown () {
     patrun.list().forEach(function (el) {
-      if (el.tearDown) { el.tearDown() }
+      if (el.data && el.data.tearDown) {
+        el.data.tearDown()
+      }
     })
     if (defaultTf && defaultTf.tearDown) {
       defaultTf.tearDown()
