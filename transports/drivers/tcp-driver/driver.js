@@ -23,7 +23,7 @@ var SIGNATURE = 4242
  * TCP transport. Simple protocol JSON messages delinated by two byte signature and length field
  * [sig][len][JSON][sig][len][JSON]...
  */
-module.exports = function (log, options) {
+module.exports = function (mu, options) {
   var emitter = new EventEmitter()
   var connections = {}
   var connectionsByIp = {}
@@ -177,4 +177,7 @@ module.exports = function (log, options) {
     setId: function (id) { }
   }
 }
+
+module.exports.epithet = 'tcp'
+module.exports.type = 'driver'
 

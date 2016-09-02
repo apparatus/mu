@@ -81,3 +81,6 @@ module.exports = function (sourceMu, options) {
   return instance
 }
 
+module.exports.epithet = 'func'
+module.exports.type = 'driver'
+
