@@ -22,7 +22,7 @@ var uuid = require('uuid')
  * Load balance transport adapter.
  * distributes requests round robin to each supplied transport
  */
-module.exports = function (mu, transports) {
+module.exports = function (transports) {
   var muid = uuid()
   var index = 0
 
@@ -34,6 +34,14 @@ module.exports = function (mu, transports) {
     if (index >= transports.length) {
       index = 0
     }
+  }
+
+
+
+  function setMu (muInstance) {
+    transports.forEach(function (transport) {
+      transport.setMu(muInstance)
+    })
   }
 
 
@@ -52,13 +60,8 @@ module.exports = function (mu, transports) {
     muid: muid,
     tf: tf,
     type: 'transport',
-    setId: setId
-    // driver: driver,
-    // tearDown: tearDown
+    setId: setId,
+    setMu: setMu
   }
 }
-
-
-module.exports.epithet = 'balance'
-module.exports.type = 'adapter'
 

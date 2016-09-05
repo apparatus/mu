@@ -14,45 +14,8 @@
 
 'use strict'
 
-var uuid = require('uuid')
-var _ = require('lodash')
+var funcDriver = require('./function-driver/driver')
+var transport = require('../core/transport')
 
-
-
-/**
- * Tee transport adapter. Sends request to each supplied transport
- */
-module.exports = function (mu, transports) {
-  var muid = uuid()
-
-
-
-  function tf (message, cb) {
-    for (var index = 0; index < transports.length; ++index) {
-      transports[index].tf(_.cloneDeep(message), cb)
-    }
-  }
-
-
-
-  function setId (id) {
-    transports.forEach(function (transport) {
-      transport.setId(muid)
-    })
-  }
-
-
-
-  setId(muid)
-
-  return {
-    tf: tf,
-    setId: setId,
-    muid: muid,
-    type: 'transport'
-  }
-}
-
-module.exports.epithet = 'tee'
-module.exports.type = 'adapter'
+module.exports = function (options) { return transport(funcDriver(options)) }
 

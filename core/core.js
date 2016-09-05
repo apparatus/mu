@@ -19,14 +19,6 @@ var uuid = require('uuid')
 var crypto = require('crypto')
 var defaultLogger = require('./log')
 var errors = require('./err')
-var transport = require('./transport')
-
-var stdTransports = {
-  'tcp': '../transports/drivers/tcp-driver/driver',
-  'func': '../transports/drivers/function-driver/driver',
-  'balance': '../transports/adapters/balance',
-  'tee': '../transports/adapters/tee'
-}
 
 
 
@@ -55,12 +47,14 @@ module.exports = function (options) {
 
 
   function inbound (pattern, tf) {
+    tf.setMu(instance)
     define(pattern, tf)
   }
 
 
 
   function outbound (pattern, tf) {
+    tf.setMu(instance)
     define(pattern, tf)
   }
 
@@ -100,29 +94,7 @@ module.exports = function (options) {
 
 
 
-  function use (tf) {
-    if (typeof tf === 'string') {
-      tf = require(stdTransports[tf])
-    }
-    assert(tf.type && tf.epithet)
-
-    if (tf.type === 'adapter') {
-      instance.transports[tf.epithet] = function (transports) { return tf(instance, transports) }
-    }
-    else if (tf.type === 'driver') {
-      instance.transports[tf.epithet] = function (options) { return transport(instance, tf(instance, options)) }
-    }
-    else {
-      assert(false)
-    }
-
-    return instance
-  }
-
-
-
   var instance = {
-    use: use,
     inbound: inbound,
     outbound: outbound,
     define: define,
