@@ -14,24 +14,51 @@
 
 'use strict'
 
-var funcDriver = require('./drivers/function-driver/driver.js')
-var tcpDriver = require('./drivers/tcp-driver/driver.js')
-var balanceAdapter = require('./adapters/balance')
-var teeAdapter = require('./adapters/tee')
+var uuid = require('uuid')
+var _ = require('lodash')
 
 
-module.exports = function (mu, transport) {
-  function func (options) { return transport(mu, funcDriver(mu, options)) }
-  function tcp (options) { return transport(mu, tcpDriver(mu, options)) }
-  function balance (transports) { return balanceAdapter(mu, transports) }
-  function tee (transports) { return teeAdapter(mu, transports) }
 
+/**
+ * Tee transport adapter. Sends request to each supplied transport
+ */
+module.exports = function (transports) {
+  var muid = uuid()
+
+
+
+  function tf (message, cb) {
+    for (var index = 0; index < transports.length; ++index) {
+      transports[index].tf(_.cloneDeep(message), cb)
+    }
+  }
+
+
+
+  function setMu (muInstance) {
+    transports.forEach(function (transport) {
+      transport.setMu(muInstance)
+    })
+  }
+
+
+
+  function setId (id) {
+    transports.forEach(function (transport) {
+      transport.setId(muid)
+    })
+  }
+
+
+
+  setId(muid)
 
   return {
-    func: func,
-    tcp: tcp,
-    balance: balance,
-    tee: tee
+    tf: tf,
+    setId: setId,
+    setMu: setMu,
+    muid: muid,
+    type: 'transport'
   }
 }
 

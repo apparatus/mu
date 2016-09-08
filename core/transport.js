@@ -25,8 +25,9 @@ var DEFAULT_TTL = 10
  *  {pattern: { pattern and data }, proto: { path: [1234, 4567],    trace: [1234, 4567], ttl: 9}}
  *  {response: { response data }, proto: { path: [1234], dst: 4567, trace: [1234, 4567, 6789], ttl: 8}}
  */
-module.exports = function (mu, driver) {
+module.exports = function (driver) {
   var muid = uuid()
+  var mu
 
   driver.setId(muid)
   driver.receive(function (err, message) {
@@ -87,6 +88,12 @@ module.exports = function (mu, driver) {
 
 
 
+  function setMu (muInstance) {
+    mu = muInstance
+  }
+
+
+
   function setId (id) {
     muid = id
   }
@@ -101,6 +108,7 @@ module.exports = function (mu, driver) {
 
   return {
     muid: muid,
+    setMu: setMu,
     tf: tf,
     type: 'transport',
     setId: setId,

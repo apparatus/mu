@@ -20,7 +20,7 @@ var register = {}
 /**
  * local function transport. uses a global function transport registry to connect in process mu instances
  */
-module.exports = function (sourceMu, options) {
+module.exports = function (options) {
   var instance
   var recieveCb
   var target = null
@@ -80,7 +80,4 @@ module.exports = function (sourceMu, options) {
 
   return instance
 }
-
-module.exports.epithet = 'func'
-module.exports.type = 'driver'
 
