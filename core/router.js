@@ -75,6 +75,8 @@ module.exports = function (logger) {
     assert(cb && (typeof cb === 'function'), 'route requries a valid callback handler')
 
     if (message && message.pattern) {
+
+      // we are routing an outbaound message as there is a pattern attached to the message
       var tf = patrun.find(message.pattern)
 
       if (!tf && defaultTf) {
@@ -90,7 +92,7 @@ module.exports = function (logger) {
         // a protocol packet send
         if (tf.type === 'handler') {
           tf.tf(message, function (err, response) {
-            cb(err, response)
+            cb(err || null, response || {})
           })
         }
 
@@ -117,12 +119,19 @@ module.exports = function (logger) {
       }
     }
     else if (message && message.response) {
+
+      // we are routing a response message as there is a response block on the message and no pattern block
       assert(message.protocol)
 
+      // pull the last muid in the chain
       var muid = message.protocol.path[message.protocol.path.length - 1]
       if (idmap[muid]) {
+
+        // we have a matching muid check if the response handler is in this instance of mu, it it is call the callback handler
+        // this will be the last step in the distributed call chain. Otherwise the message is being routed through a transport layer
+        // so call the tf and invoke the local callback once the message has been sent
         if (idmap[muid].type === 'callback') {
-          idmap[muid].tf(null, message)
+          idmap[muid].tf(message.response.err || null, message.response)
         }
         else {
           idmap[muid].tf(message, function (err, response) {
@@ -131,12 +140,7 @@ module.exports = function (logger) {
         }
       }
       else {
-
-        // missing both pattern and response fields, this should never happen, discard packet...
-        logger.error('Malformed packet no pattern or response field. Message will be discarded')
-        logger.debug(JSON.stringify(message))
-        cb({type: errors.TRANSPORT_ERR, message: 'Malformed packet no pattern or response field. Message will be discarded', data: message})
-
+        // there is no available transport or handler for this mu id, this should never happen, discard the packet...
         logger.error('routing error no available response transport function for: ' + JSON.stringify(message))
         cb('routing error no available response transport function for: ' + JSON.stringify(message))
       }

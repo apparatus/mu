@@ -16,6 +16,7 @@
 
 var assert = require('assert')
 var uuid = require('uuid')
+var _ = require('lodash')
 var DEFAULT_TTL = 10
 
 
@@ -30,42 +31,41 @@ module.exports = function (driver) {
   var mu
 
   driver.setId(muid)
-  driver.receive(function (err, message) {
+  driver.receive(function (err, msg) {
     if (err) { mu.log.error('err: ' + err) }
-    mu.log.debug('node: ' + muid + ' <- ' + JSON.stringify(message))
+    mu.log.debug('node: ' + muid + ' <- ' + JSON.stringify(msg))
 
-    mu.dispatch(message, function (err, response) {
+    mu.dispatch(msg, function (err, response) {
       var packet
 
-      if (err) {
-        // handle errors here?
-        mu.log.error('err: ' + err)
+      var message = _.cloneDeep(msg)
+      if (response && response.protocol) {
+        packet = _.cloneDeep(response)
       }
       else {
-        if (response && response.protocol) {
-          packet = response
-        }
-        else {
-          if (!response) {
-            response = {}
+        if (!response) {
+          response = {}
+          if (err) {
+            response.err = err
           }
-          packet = {response: response, protocol: message.protocol}
         }
-
-        packet.protocol.trace.push(muid)
-        packet.protocol.src = muid
-        packet.protocol.dst = packet.protocol.path.pop()
-        mu.log.debug('node: ' + muid + ' -> ' + JSON.stringify(packet))
-        driver.send(packet)
+        packet = {response: _.cloneDeep(response), protocol: message.protocol}
       }
+      packet.protocol.trace.push(muid)
+      packet.protocol.src = muid
+      packet.protocol.dst = packet.protocol.path.pop()
+      mu.log.debug('node: ' + muid + ' -> ' + JSON.stringify(packet))
+      driver.send(packet)
     })
   })
 
 
 
-  function tf (message, cb) {
-    assert(message)
+  function tf (msg, cb) {
+    assert(msg)
     assert(cb && (typeof cb === 'function'), 'transport requries a valid callback handler')
+
+    var message = _.cloneDeep(msg)
 
     if (!message.protocol) {
       message.protocol = {path: [], trace: [], ttl: DEFAULT_TTL}

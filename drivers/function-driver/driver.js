@@ -35,7 +35,12 @@ module.exports = function (options) {
 
   function send (message, cb) {
     if (message.protocol.dst === 'target') {
-      target.call(message)
+      if (target && target.call) {
+        target.call(message)
+      }
+      else {
+        cb('funciton routing error: no matching target')
+      }
     }
     else {
       register[message.protocol.dst].call(message)

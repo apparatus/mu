@@ -15,11 +15,13 @@
 'use strict'
 
 var test = require('tape')
-var mu = require('../lib/core')()
+var Mu = require('../../core/core')
 
 
 test('local handler test', function (t) {
   t.plan(6)
+
+  var mu = Mu()
 
   mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
     t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' })
@@ -43,12 +45,14 @@ test('local handler test', function (t) {
 })
 
 
+
 test('route print test', function (t) {
   t.plan(1)
   var result = `patterns:
 {"cmd":"one","role":"test"} -> handler
 {"cmd":"two","role":"test"} -> handler
 `
+  var mu = Mu()
 
   mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
     t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' })

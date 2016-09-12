@@ -27,8 +27,8 @@
   },
   "scripts": {
     "lint": "jshint **/*.js",
-    "test": "jshint **/*.js && tape **/*test/*Test.js",
-    "coverage": "istanbul cover test/*Test.js && open ./coverage/lcov-report/index.html",
+    "test": "tape test/**/*Test.js",
+    "coverage": "istanbul cover test/**/*Test.js && open ./coverage/lcov-report/index.html",
     "coverage-check": "istanbul cover test/*Test.js && istanbul check-coverage",
     "commit-check": "jshint **/*.js && istanbul cover test/*Test.js && istanbul check-coverage"
   },

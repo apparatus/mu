@@ -15,19 +15,16 @@
 'use strict'
 
 var test = require('tape')
-
-var mu_ = require('../lib/core')
-var transport_ = require('../lib/transport')
-var driver_ = require('./helpers/testTransportDriver')
+var Mu = require('../../core/core')
+var func = require('../../drivers/func')
 
 
 test('local handler test', function (t) {
   t.plan(6)
 
-  // service
-  var mus = mu_()
-  var musDriver = driver_()
 
+  // service
+  var mus = Mu()
   mus.define({role: 'test', cmd: 'one'}, function (args, cb) {
     t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' })
     cb()
@@ -37,33 +34,23 @@ test('local handler test', function (t) {
     t.deepEqual(args.pattern, { role: 'test', cmd: 'two', fish: 'cheese' })
     cb(null, {my: 'response'})
   })
-
-  mus.define('*', transport_(mus, musDriver))
+  mus.inbound('*', func())
 
 
   // consumer
-  var mu = mu_()
-  var muDriver = driver_()
-
-  mu.define('*', transport_(mu, muDriver))
-
-  muDriver.setTarget(musDriver)
-  musDriver.setTarget(muDriver)
+  var mu = Mu()
+  mu.outbound('*', func({target: mus}))
 
 
   // execute
   mu.dispatch({role: 'test', cmd: 'one', fish: 'cheese'}, function (err, result) {
     t.equal(null, err)
-    console.log(result)
-    // t.equal(undefined, result)
+    t.deepEqual({}, result.response)
   })
 
-
-  /*
   mu.dispatch({role: 'test', cmd: 'two', fish: 'cheese'}, function (err, result) {
     t.equal(null, err)
-    t.deepEqual({my: 'response'}, result)
+    t.deepEqual({my: 'response'}, result.response)
   })
-  */
 })
 

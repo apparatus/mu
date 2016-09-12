@@ -82,7 +82,7 @@ module.exports = function (options) {
 
       connections[message.protocol.dst].on('error', function (err) {
         connections[message.protocol.dst] = null
-        emitter.emit('receive', err, null)
+        emitter.emit('receive', err || null, null)
       })
     }
 
@@ -145,7 +145,7 @@ module.exports = function (options) {
       c.on('error', function (err) {
         connections[connectionsByIp[c.remoteAddress + '_' + c.remotePort]] = null
         connectionsByIp[c.remoteAddress + '_' + c.remotePort] = null
-        emitter.emit('receive', err, null)
+        emitter.emit('receive', err || null, null)
       })
     })
     server.listen(options.source.port, options.source.host)
