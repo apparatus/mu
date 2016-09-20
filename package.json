@@ -27,15 +27,10 @@
   },
   "scripts": {
     "lint": "jshint **/*.js",
-    "test": "jshint **/*.js && tape **/*test/*Test.js",
-    "coverage": "istanbul cover test/*Test.js && open ./coverage/lcov-report/index.html",
-    "coverage-check": "istanbul cover test/*Test.js && istanbul check-coverage",
-    "commit-check": "jshint **/*.js && istanbul cover test/*Test.js && istanbul check-coverage"
+    "test": "tap test/**/*Test.js",
+    "coverage": "tap test/**/*Test.js --cov --coverage-report=html"
   },
   "devDependencies": {
-    "istanbul": "^0.4.3",
-    "pre-commit": "^1.1.1",
-    "tap-dot": "^1.0.5",
-    "tape": "^4.2.0"
+    "tap": "^7.1.2"
   }
 }

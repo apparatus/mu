@@ -47,26 +47,6 @@ module.exports = function (logger) {
 
 
 
-  var removeRoute = function (pattern) {
-    assert(pattern, 'removeRoute requries a valid pattern')
-
-    if (_.isString(pattern) && pattern === '*') {
-      logger.debug('removing default route')
-      idmap[defaultTf.muid] = null
-      defaultTf = null
-    }
-    else {
-      var tf = patrun.find(pattern)
-      if (tf) {
-        logger.debug('removing route: ' + pattern)
-        idmap[tf.muid] = null
-        patrun.remove(pattern)
-      }
-    }
-  }
-
-
-
   /**
    * main routing function
    */
@@ -75,6 +55,8 @@ module.exports = function (logger) {
     assert(cb && (typeof cb === 'function'), 'route requries a valid callback handler')
 
     if (message && message.pattern) {
+
+      // we are routing an outbound message as there is a pattern attached to the message
       var tf = patrun.find(message.pattern)
 
       if (!tf && defaultTf) {
@@ -89,23 +71,30 @@ module.exports = function (logger) {
         // process instance or more likely in transport.js. This will pack the error and response paramters into
         // a protocol packet send
         if (tf.type === 'handler') {
+          logger.debug('handling message: ' + JSON.stringify(message))
           tf.tf(message, function (err, response) {
-            cb(err, response)
+            cb(err || null, response || {})
           })
         }
-
-        // message will be sent to this transport handler. In this case the error paramter signals an internal error
-        // condition within the transport handler, for example a socket timeout. In this instance the error message will
-        // be logged and an exception thrown. This will result in this node crashing and restarting - this is by design
         else if (tf.type === 'transport') {
-          tf.tf(message, function (err) {
-            if (err) { return cb(err) }
-          })
-        }
-        else {
 
-          // a transport function was provided but of an unknown type, this should never happen, crash...
-          assert(false, 'Routing error unspecificed type.')
+          // update the repsponse routing information
+          if (!idmap['' + message.protocol.path[message.protocol.path.length - 1]] && message.protocol.inboundIfc) {
+            idmap['' + message.protocol.path[message.protocol.path.length - 1]] = idmap['' + message.protocol.inboundIfc]
+          }
+
+          // message will be sent to this transport handler. In this case the error paramter signals an internal error
+          // condition within the transport handler, for example a socket timeout. In this instance the error message will
+          // be logged and an exception thrown. This will result in this node crashing and restarting - this is by design
+          if (tf.direction === 'outbound') {
+            tf.tf(message, function (err) {
+              if (err) { return cb(err) }
+            })
+          }
+          else {
+            logger.error('Routing error: no valid outbound route or handler available. Message will be discarded')
+            cb({type: errors.TRANSPORT_ERR, message: 'Routing error: no valid outbound route available. Message will be discarded'})
+          }
         }
       }
       else {
@@ -117,12 +106,19 @@ module.exports = function (logger) {
       }
     }
     else if (message && message.response) {
+
+      // we are routing a response message as there is a response block on the message and no pattern block
       assert(message.protocol)
 
+      // pull the last muid in the chain
       var muid = message.protocol.path[message.protocol.path.length - 1]
       if (idmap[muid]) {
+
+        // we have a matching muid check if the response handler is in this instance of mu, it it is call the callback handler
+        // this will be the last step in the distributed call chain. Otherwise the message is being routed through a transport layer
+        // so call the tf and invoke the local callback once the message has been sent
         if (idmap[muid].type === 'callback') {
-          idmap[muid].tf(null, message)
+          idmap[muid].tf(message.response.err || null, message.response)
         }
         else {
           idmap[muid].tf(message, function (err, response) {
@@ -132,11 +128,7 @@ module.exports = function (logger) {
       }
       else {
 
-        // missing both pattern and response fields, this should never happen, discard packet...
-        logger.error('Malformed packet no pattern or response field. Message will be discarded')
-        logger.debug(JSON.stringify(message))
-        cb({type: errors.TRANSPORT_ERR, message: 'Malformed packet no pattern or response field. Message will be discarded', data: message})
-
+        // there is no available transport or handler for this mu id, this should never happen, discard the packet...
         logger.error('routing error no available response transport function for: ' + JSON.stringify(message))
         cb('routing error no available response transport function for: ' + JSON.stringify(message))
       }
@@ -185,10 +177,10 @@ module.exports = function (logger) {
 
     result += 'patterns:\n'
     patrun.list().forEach(function (el) {
-      result += JSON.stringify(el.match) + ' -> ' + el.data.type + '\n'
+      result += JSON.stringify(el.match) + ' : ' + el.data.muid + ' (' + el.data.type + ')' + '\n'
     })
     if (defaultTf) {
-      result += '* -> ' + defaultTf.type + '\n'
+      result += '* : ' + defaultTf.muid + ' (' + defaultTf.type + ')' + '\n'
     }
 
     return result
@@ -198,7 +190,6 @@ module.exports = function (logger) {
 
   return {
     addRoute: addRoute,
-    removeRoute: removeRoute,
     route: route,
     tearDown: tearDown,
     print: print,

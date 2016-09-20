@@ -16,7 +16,7 @@
 
 var assert = require('assert')
 var uuid = require('uuid')
-var DEFAULT_TTL = 10
+var _ = require('lodash')
 
 
 
@@ -30,51 +30,54 @@ module.exports = function (driver) {
   var mu
 
   driver.setId(muid)
-  driver.receive(function (err, message) {
-    if (err) { mu.log.error('err: ' + err) }
-    mu.log.debug('node: ' + muid + ' <- ' + JSON.stringify(message))
+  driver.receive(function (err, msg) {
+    mu.log.debug('node: ' + muid + ' <- ' + JSON.stringify(msg))
+    msg.protocol.inboundIfc = muid
 
-    mu.dispatch(message, function (err, response) {
-      var packet
+    if (err) {
 
-      if (err) {
-        // handle errors here?
-        mu.log.error('err: ' + err)
-      }
-      else {
-        if (response && response.protocol) {
-          packet = response
+      // recieved an error condition from the driver, typically this signals a failed client connection or other
+      // inbound connection error condition. In this case, log the error but make no attempt at further routing
+      mu.log.error('node: ' + muid + ' ERROR: ', err)
+    }
+    else {
+      mu.dispatch(msg, function (err, response) {
+        var packet
+
+        var message = _.cloneDeep(msg)
+        if (!response) {
+          response = {}
         }
-        else {
-          if (!response) {
-            response = {}
-          }
-          packet = {response: response, protocol: message.protocol}
+        if (err) {
+          response.err = err
         }
-
+        packet = {response: _.cloneDeep(response), protocol: message.protocol}
         packet.protocol.trace.push(muid)
         packet.protocol.src = muid
         packet.protocol.dst = packet.protocol.path.pop()
         mu.log.debug('node: ' + muid + ' -> ' + JSON.stringify(packet))
         driver.send(packet)
-      }
-    })
+      })
+    }
   })
 
 
 
-  function tf (message, cb) {
-    assert(message)
+  function tf (msg, cb) {
+    assert(msg)
+    assert(msg.protocol)
     assert(cb && (typeof cb === 'function'), 'transport requries a valid callback handler')
 
-    if (!message.protocol) {
-      message.protocol = {path: [], trace: [], ttl: DEFAULT_TTL}
-    }
+    var message = _.cloneDeep(msg)
+
     if (message.pattern) {
       message.protocol.path.push(muid)
     }
     if (!message.protocol.dst) {
       message.protocol.dst = 'target'
+    }
+    if (message.response) {
+      message.protocol.dst = message.protocol.path.pop()
     }
 
     message.protocol.src = muid

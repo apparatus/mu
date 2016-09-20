@@ -19,38 +19,30 @@ var Mu = require('../../core/core')
 var func = require('../../drivers/func')
 
 
-test('local handler test', function (t) {
-  t.plan(6)
+test('force an error with function trasport test for coverage numbers', function (t) {
+  t.plan(1)
 
+  var mu1 = Mu()
 
-  // service
-  var mus = Mu()
-  mus.define({role: 'test', cmd: 'one'}, function (args, cb) {
-    t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
+  mu1.define({role: 's1', cmd: 'one'}, function (args, cb) {
     cb()
   })
 
-  mus.define({role: 'test', cmd: 'two'}, function (args, cb) {
-    t.deepEqual(args.pattern, { role: 'test', cmd: 'two', fish: 'cheese' }, 'check pattern cmd two')
+  mu1.define({role: 's1', cmd: 'two'}, function (args, cb) {
     cb(null, {my: 'response'})
   })
-  mus.inbound('*', func())
 
+  mu1.inbound('*', func())
 
-  // consumer
   var mu = Mu()
-  mu.outbound('*', func({target: mus}))
 
+  mu.outbound({role: 's1'}, func({target: mu1}))
 
-  // execute
-  mu.dispatch({role: 'test', cmd: 'one', fish: 'cheese'}, function (err, result) {
-    t.equal(null, err, 'check err is null')
-    t.deepEqual({}, result, 'check response is empty')
+  mu.dispatch({role: 's1', cmd: 'one', __err: 'err'}, function () {
   })
-
-  mu.dispatch({role: 'test', cmd: 'two', fish: 'cheese'}, function (err, result) {
-    t.equal(null, err, 'check err is null')
-    t.deepEqual({my: 'response'}, result, 'check result')
-  })
+  setTimeout(function () {
+    mu1.tearDown()
+    mu.tearDown()
+    t.pass('expect no response from driver fail')
+  }, 500)
 })
-

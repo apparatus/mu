@@ -19,7 +19,7 @@ var uuid = require('uuid')
 var crypto = require('crypto')
 var defaultLogger = require('./log')
 var errors = require('./err')
-
+var DEFAULT_TTL = 10
 
 
 module.exports = function (options) {
@@ -48,6 +48,7 @@ module.exports = function (options) {
 
   function inbound (pattern, tf) {
     tf.setMu(instance)
+    tf.direction = 'inbound'
     define(pattern, tf)
   }
 
@@ -55,6 +56,7 @@ module.exports = function (options) {
 
   function outbound (pattern, tf) {
     tf.setMu(instance)
+    tf.direction = 'outbound'
     define(pattern, tf)
   }
 
@@ -73,7 +75,7 @@ module.exports = function (options) {
       hash.update('' + cb)
       digest = hash.digest('hex')
       router.addRoute(null, {muid: digest, tf: cb, type: 'callback'})
-      router.route({pattern: message, protocol: {path: [digest], trace: [digest], ttl: 10}}, cb)
+      router.route({pattern: message, protocol: {path: [digest], trace: [digest], ttl: DEFAULT_TTL}}, cb)
     }
     else {
       router.route(message, cb)
