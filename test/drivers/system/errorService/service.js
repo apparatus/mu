@@ -14,18 +14,16 @@
 
 'use strict'
 
-
 var mu = require('../../../../core/core')()
+
 
 module.exports = function (cb) {
 
   mu.define({role: 'error', cmd: 'error'}, function (args, cb) {
-    console.log('gnerating error')
     cb('oh fek', null)
   })
 
   mu.define({role: 'error', cmd: 'crash'}, function (args, cb) {
-    console.log('crashing')
     process.exit(1)
   })
 

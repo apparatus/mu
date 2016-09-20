@@ -14,14 +14,32 @@
 
 'use strict'
 
+var test = require('tap').test
+var Mu = require('../../core/core')
+var tcp = require('../../drivers/tcp')
 
-var mu = require('../../../../core/core')()
+var s1 = Mu()
 
-module.exports = function (cb) {
-
-  mu.define({role: 'zero', cmd: 'one'}, function (args, cb) {
-  })
-
-  cb(mu)
+var h1 = function (args, cb) {
+  cb()
 }
+
+s1.define({role: 's1', cmd: 'one'}, h1)
+s1.inbound({role: 's1'}, tcp.server({port: 3001, host: '127.0.0.1'}))
+
+
+test('test no service', function (t) {
+  t.plan(2)
+
+  var mu = Mu()
+  mu.outbound({role: 's1'}, tcp.client({port: 3001, host: '127.0.0.1'}))
+  mu.dispatch({role: 's1', cmd: 'one'}, function (err, result) {
+    t.equal(err, null)
+    mu.dispatch({wibble: 'fish'}, function (err, result) {
+      t.equal(err.message, 'Routing error no matching route and no defualt route provided, Message will be discarded')
+      s1.tearDown()
+      mu.tearDown()
+    })
+  })
+})
 

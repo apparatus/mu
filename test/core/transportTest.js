@@ -14,7 +14,7 @@
 
 'use strict'
 
-var test = require('tape')
+var test = require('tap').test
 var Mu = require('../../core/core')
 var func = require('../../drivers/func')
 
@@ -26,12 +26,12 @@ test('local handler test', function (t) {
   // service
   var mus = Mu()
   mus.define({role: 'test', cmd: 'one'}, function (args, cb) {
-    t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' })
+    t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
     cb()
   })
 
   mus.define({role: 'test', cmd: 'two'}, function (args, cb) {
-    t.deepEqual(args.pattern, { role: 'test', cmd: 'two', fish: 'cheese' })
+    t.deepEqual(args.pattern, { role: 'test', cmd: 'two', fish: 'cheese' }, 'check pattern cmd two')
     cb(null, {my: 'response'})
   })
   mus.inbound('*', func())
@@ -44,13 +44,13 @@ test('local handler test', function (t) {
 
   // execute
   mu.dispatch({role: 'test', cmd: 'one', fish: 'cheese'}, function (err, result) {
-    t.equal(null, err)
-    t.deepEqual({}, result.response)
+    t.equal(null, err, 'check err is null')
+    t.deepEqual({}, result, 'check response is empty')
   })
 
   mu.dispatch({role: 'test', cmd: 'two', fish: 'cheese'}, function (err, result) {
-    t.equal(null, err)
-    t.deepEqual({my: 'response'}, result.response)
+    t.equal(null, err, 'check err is null')
+    t.deepEqual({my: 'response'}, result, 'check result')
   })
 })
 

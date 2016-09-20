@@ -14,7 +14,7 @@
 
 'use strict'
 
-var test = require('tape')
+var test = require('tap').test
 var tcp = require('../../drivers/tcp')
 var rcc = require('./system/consumer/responseCountConsumer')()
 
@@ -42,7 +42,7 @@ test('consume services expect two responses', function (t) {
       count = countResult
     })
     setTimeout(function () {
-      t.equal(count, 2)
+      t.equal(count, 2, 'check service returns two responses')
       multi.tearDown()
       zero.tearDown()
       rcc.mu.tearDown()

@@ -15,14 +15,16 @@
 'use strict'
 
 var test = require('tap').test
+var mu = require('../../core/core')()
 var tcp = require('../../drivers/tcp')
-
+var balance = require('../../adapters/balance')
+var service = require('./system/service1/service')
 
 
 function init (cb) {
-  require('./system/service1/service')(function (s1) {
+  service(function (s1) {
     s1.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))
-    require('./system/service2/service')(function (s2) {
+    service(function (s2) {
       s2.inbound('*', tcp.server({port: 3002, host: '127.0.0.1'}))
       cb(s1, s2)
     })
@@ -30,21 +32,21 @@ function init (cb) {
 }
 
 
-
-test('consume services with tcp transport test', function (t) {
-  t.plan(1)
+test('consume services with tcp balancer adapter', function (t) {
+  t.plan(2)
 
   init(function (s1, s2) {
-    var consumer = require('./system/consumer/consumer')()
-    consumer.mu.outbound({role: 's1'}, tcp.client({port: 3001, host: '127.0.0.1'}))
-    consumer.mu.outbound({role: 's2'}, tcp.client({port: 3002, host: '127.0.0.1'}))
-    consumer.consume(function (err, result) {
-      t.equal(err, null, 'check err is null')
-      consumer.mu.tearDown()
-      s1.tearDown()
-      s2.tearDown()
+    mu.outbound({role: 's1'}, balance([tcp.client({port: 3001, host: '127.0.0.1'}),
+                                       tcp.client({port: 3002, host: '127.0.0.1'})]))
+    mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
+      t.equal(null, err)
+      mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
+        t.equal(null, err)
+        mu.tearDown()
+        s1.tearDown()
+        s2.tearDown()
+      })
     })
   })
 })
-
 

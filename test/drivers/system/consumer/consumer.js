@@ -21,10 +21,8 @@ module.exports = function () {
   function consume (cb) {
     mu.dispatch({role: 's2', cmd: 'one', fish: 'cheese'}, function (err, result) {
       if (err) { console.log(err) }
-      console.log('in cb 1')
       mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
         if (err) { console.log(err) }
-        console.log('in cb 2')
         cb(err, result)
       })
     })

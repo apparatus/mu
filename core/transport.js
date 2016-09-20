@@ -17,7 +17,6 @@
 var assert = require('assert')
 var uuid = require('uuid')
 var _ = require('lodash')
-var DEFAULT_TTL = 10
 
 
 
@@ -32,49 +31,53 @@ module.exports = function (driver) {
 
   driver.setId(muid)
   driver.receive(function (err, msg) {
-    if (err) { mu.log.error('err: ' + err) }
     mu.log.debug('node: ' + muid + ' <- ' + JSON.stringify(msg))
+    msg.protocol.inboundIfc = muid
 
-    mu.dispatch(msg, function (err, response) {
-      var packet
+    if (err) {
 
-      var message = _.cloneDeep(msg)
-      if (response && response.protocol) {
-        packet = _.cloneDeep(response)
-      }
-      else {
+      // recieved an error condition from the driver, typically this signals a failed client connection or other
+      // inbound connection error condition. In this case, log the error but make no attempt at further routing
+      mu.log.error('node: ' + muid + ' ERROR: ', err)
+    }
+    else {
+      mu.dispatch(msg, function (err, response) {
+        var packet
+
+        var message = _.cloneDeep(msg)
         if (!response) {
           response = {}
-          if (err) {
-            response.err = err
-          }
+        }
+        if (err) {
+          response.err = err
         }
         packet = {response: _.cloneDeep(response), protocol: message.protocol}
-      }
-      packet.protocol.trace.push(muid)
-      packet.protocol.src = muid
-      packet.protocol.dst = packet.protocol.path.pop()
-      mu.log.debug('node: ' + muid + ' -> ' + JSON.stringify(packet))
-      driver.send(packet)
-    })
+        packet.protocol.trace.push(muid)
+        packet.protocol.src = muid
+        packet.protocol.dst = packet.protocol.path.pop()
+        mu.log.debug('node: ' + muid + ' -> ' + JSON.stringify(packet))
+        driver.send(packet)
+      })
+    }
   })
 
 
 
   function tf (msg, cb) {
     assert(msg)
+    assert(msg.protocol)
     assert(cb && (typeof cb === 'function'), 'transport requries a valid callback handler')
 
     var message = _.cloneDeep(msg)
 
-    if (!message.protocol) {
-      message.protocol = {path: [], trace: [], ttl: DEFAULT_TTL}
-    }
     if (message.pattern) {
       message.protocol.path.push(muid)
     }
     if (!message.protocol.dst) {
       message.protocol.dst = 'target'
+    }
+    if (message.response) {
+      message.protocol.dst = message.protocol.path.pop()
     }
 
     message.protocol.src = muid

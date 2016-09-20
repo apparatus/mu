@@ -47,26 +47,6 @@ module.exports = function (logger) {
 
 
 
-  var removeRoute = function (pattern) {
-    assert(pattern, 'removeRoute requries a valid pattern')
-
-    if (_.isString(pattern) && pattern === '*') {
-      logger.debug('removing default route')
-      idmap[defaultTf.muid] = null
-      defaultTf = null
-    }
-    else {
-      var tf = patrun.find(pattern)
-      if (tf) {
-        logger.debug('removing route: ' + pattern)
-        idmap[tf.muid] = null
-        patrun.remove(pattern)
-      }
-    }
-  }
-
-
-
   /**
    * main routing function
    */
@@ -76,7 +56,7 @@ module.exports = function (logger) {
 
     if (message && message.pattern) {
 
-      // we are routing an outbaound message as there is a pattern attached to the message
+      // we are routing an outbound message as there is a pattern attached to the message
       var tf = patrun.find(message.pattern)
 
       if (!tf && defaultTf) {
@@ -91,23 +71,30 @@ module.exports = function (logger) {
         // process instance or more likely in transport.js. This will pack the error and response paramters into
         // a protocol packet send
         if (tf.type === 'handler') {
+          logger.debug('handling message: ' + JSON.stringify(message))
           tf.tf(message, function (err, response) {
             cb(err || null, response || {})
           })
         }
-
-        // message will be sent to this transport handler. In this case the error paramter signals an internal error
-        // condition within the transport handler, for example a socket timeout. In this instance the error message will
-        // be logged and an exception thrown. This will result in this node crashing and restarting - this is by design
         else if (tf.type === 'transport') {
-          tf.tf(message, function (err) {
-            if (err) { return cb(err) }
-          })
-        }
-        else {
 
-          // a transport function was provided but of an unknown type, this should never happen, crash...
-          assert(false, 'Routing error unspecificed type.')
+          // update the repsponse routing information
+          if (!idmap['' + message.protocol.path[message.protocol.path.length - 1]] && message.protocol.inboundIfc) {
+            idmap['' + message.protocol.path[message.protocol.path.length - 1]] = idmap['' + message.protocol.inboundIfc]
+          }
+
+          // message will be sent to this transport handler. In this case the error paramter signals an internal error
+          // condition within the transport handler, for example a socket timeout. In this instance the error message will
+          // be logged and an exception thrown. This will result in this node crashing and restarting - this is by design
+          if (tf.direction === 'outbound') {
+            tf.tf(message, function (err) {
+              if (err) { return cb(err) }
+            })
+          }
+          else {
+            logger.error('Routing error: no valid outbound route or handler available. Message will be discarded')
+            cb({type: errors.TRANSPORT_ERR, message: 'Routing error: no valid outbound route available. Message will be discarded'})
+          }
         }
       }
       else {
@@ -140,6 +127,7 @@ module.exports = function (logger) {
         }
       }
       else {
+
         // there is no available transport or handler for this mu id, this should never happen, discard the packet...
         logger.error('routing error no available response transport function for: ' + JSON.stringify(message))
         cb('routing error no available response transport function for: ' + JSON.stringify(message))
@@ -189,10 +177,10 @@ module.exports = function (logger) {
 
     result += 'patterns:\n'
     patrun.list().forEach(function (el) {
-      result += JSON.stringify(el.match) + ' -> ' + el.data.type + '\n'
+      result += JSON.stringify(el.match) + ' : ' + el.data.muid + ' (' + el.data.type + ')' + '\n'
     })
     if (defaultTf) {
-      result += '* -> ' + defaultTf.type + '\n'
+      result += '* : ' + defaultTf.muid + ' (' + defaultTf.type + ')' + '\n'
     }
 
     return result
@@ -202,7 +190,6 @@ module.exports = function (logger) {
 
   return {
     addRoute: addRoute,
-    removeRoute: removeRoute,
     route: route,
     tearDown: tearDown,
     print: print,

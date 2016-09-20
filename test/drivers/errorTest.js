@@ -14,7 +14,7 @@
 
 'use strict'
 
-var test = require('tape')
+var test = require('tap').test
 var mu = require('../../core/core')()
 var tcp = require('../../drivers/tcp')
 
@@ -27,33 +27,53 @@ function init (cb) {
   })
 }
 
-/*
- * to simulate:
- * send error - simulate this with an error driver
- * service returns in bound error (in protocol) - simulate with a tcp servce
- * service crashes and restarts - simulate with a tcp service
- * service locks up (i.e. no response) (make it simple to add a service timeout on a per call basis ? or is this external to mu) simulate with a tcp service
- *
- * work in this -> also need to update other tests with correct response,
- * the protocol block should not be passed back to the calling code, however may need some mechanism to
- * make this available for debugging...
- *
- * test this will a single instace dispatch also
- */
+
+test('test no service', function (t) {
+  mu.outbound('*', tcp.client({port: 3001, host: '127.0.0.1'}))
+  mu.dispatch({role: 'wibble', cmd: 'fish'}, function (err, result) {
+    mu.tearDown()
+    t.equal(err.code, 'ECONNREFUSED', 'check connection refused')
+    t.end()
+  })
+})
 
 
-
-test('service returning inbound error', function (t) {
-  t.plan(1)
+test('test match nothing', function (t) {
 
   init(function (errSvc) {
     mu.outbound('*', tcp.client({port: 3001, host: '127.0.0.1'}))
-    mu.dispatch({role: 'error', cmd: 'error'}, function (err, result) {
-      t.equal(err, 'oh fek')
-      errSvc.tearDown()
+    mu.dispatch({role: 'wibble', cmd: 'fish'}, function (err, result) {
       mu.tearDown()
+      t.deepEqual(err, { message: 'Routing error: no valid outbound route available. Message will be discarded', type: 3 })
+      errSvc.tearDown()
+      t.end()
     })
   })
 })
 
-// crash test - will need to spin up separate process here and send the message
+
+test('test match partial', function (t) {
+  init(function (errSvc) {
+    mu.outbound('*', tcp.client({port: 3001, host: '127.0.0.1'}))
+    mu.dispatch({role: 'error', cmd: 'fish'}, function (err, result) {
+      mu.tearDown()
+      t.deepEqual(err, { message: 'Routing error: no valid outbound route available. Message will be discarded', type: 3 })
+      errSvc.tearDown()
+      t.end()
+    })
+  })
+})
+
+
+test('service returning inbound error', function (t) {
+  init(function (errSvc) {
+    mu.outbound('*', tcp.client({port: 3001, host: '127.0.0.1'}))
+    mu.dispatch({role: 'error', cmd: 'error'}, function (err, result) {
+      mu.tearDown()
+      t.equal(err, 'oh fek', 'check error response')
+      errSvc.tearDown()
+      t.end()
+    })
+  })
+})
+

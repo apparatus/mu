@@ -20,12 +20,10 @@ var mu = require('../../../../core/core')()
 module.exports = function (cb) {
 
   mu.define({role: 's2', cmd: 'one'}, function (args, cb) {
-    console.log('service 2 one')
     cb()
   })
 
   mu.define({role: 's2', cmd: 'two'}, function (args, cb) {
-    console.log('service 2 two')
     cb(null, {my: 'response'})
   })
 

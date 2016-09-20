@@ -14,34 +14,17 @@
 
 'use strict'
 
-var test = require('tape')
-var tcp = require('../../drivers/tcp')
+var mu = require('../../../../core/core')()
 
 
+module.exports = function (cb) {
 
-function init (cb) {
-  require('./system/errorService/service')(function (s1) {
-    s1.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))
-    cb(s1)
-  })
-}
-
-
-
-test('consume services returning inbounds error', function (t) {
-  t.plan(1)
-
-  init(function (s1, s2) {
-    var consumer = require('./system/consumer/')()
-    consumer.mu.outbound({role: 's1'}, tcp.client({port: 3001, host: '127.0.0.1'}))
-    consumer.mu.outbound({role: 's2'}, tcp.client({port: 3002, host: '127.0.0.1'}))
-    consumer.consume(function (err, result) {
-      t.equal(err, null)
-      consumer.mu.tearDown()
-      s1.tearDown()
-      s2.tearDown()
+  mu.define({role: 's3', cmd: 'one'}, function (args, cb) {
+    mu.dispatch({role: 's1', cmd: 'two'}, function (err, result) {
+      cb(err, result)
     })
   })
-})
 
+  cb(mu)
+}
 

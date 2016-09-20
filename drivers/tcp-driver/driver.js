@@ -34,7 +34,6 @@ module.exports = function (options) {
 
   /**
    * recieve callback: function(err, msg)
-   *
    * - err indicate a local transport error NOT an error from the remote
    * - msg
    */
@@ -82,13 +81,10 @@ module.exports = function (options) {
 
       connections[message.protocol.dst].on('error', function (err) {
         connections[message.protocol.dst] = null
-        emitter.emit('receive', err || null, null)
+        cb(err || null, null)
       })
     }
-
-    connections[message.protocol.dst].write(encode(message), function (err) {
-      if (err && cb) { return cb(err) }
-    })
+    connections[message.protocol.dst].write(encode(message))
   }
 
 
@@ -142,11 +138,13 @@ module.exports = function (options) {
         connectionsByIp[c.remoteAddress + '_' + c.remotePort] = null
       })
 
+      /*
       c.on('error', function (err) {
-        connections[connectionsByIp[c.remoteAddress + '_' + c.remotePort]] = null
+        connections[connectionsByIp[c.remoteAddress + '_' + c.remotePort]].destroy()
         connectionsByIp[c.remoteAddress + '_' + c.remotePort] = null
         emitter.emit('receive', err || null, null)
       })
+      */
     })
     server.listen(options.source.port, options.source.host)
   }

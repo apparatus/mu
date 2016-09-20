@@ -14,7 +14,7 @@
 
 'use strict'
 
-var test = require('tape')
+var test = require('tap').test
 var logger = require('../../core/log')
 
 
@@ -25,6 +25,7 @@ test('logging', function (t) {
   log.debug('hidden')
   log.info('visible')
   log.error('visible')
+  log.setLevel(logger.levelDebug)
   t.equal(1, 1)
 })
 

@@ -14,7 +14,7 @@
 
 'use strict'
 
-var test = require('tape')
+var test = require('tap').test
 var tcp = require('../../drivers/tcp')
 var rcc = require('./system/consumer/responseCountConsumer')()
 
