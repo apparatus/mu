@@ -14,18 +14,8 @@
 
 'use strict'
 
-var test = require('tap').test
-var logger = require('../../core/log')
+var funcDriver = require('./function-driver/driver')
+var transport = require('../core/transport')
 
-
-test('logging', function (t) {
-  t.plan(1)
-
-  var log = logger.create(logger.levelInfo)
-  log.debug('hidden')
-  log.info('visible')
-  log.error('visible')
-  log.setLevel(logger.levelDebug)
-  t.equal(1, 1)
-})
+module.exports = function (options) { return transport(funcDriver(options)) }
 

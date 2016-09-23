@@ -14,18 +14,54 @@
 
 'use strict'
 
-var test = require('tap').test
-var logger = require('../../core/log')
+var uuid = require('uuid')
 
 
-test('logging', function (t) {
-  t.plan(1)
 
-  var log = logger.create(logger.levelInfo)
-  log.debug('hidden')
-  log.info('visible')
-  log.error('visible')
-  log.setLevel(logger.levelDebug)
-  t.equal(1, 1)
-})
+/**
+ * Load balance transport adapter.
+ * distributes requests round robin to each supplied transport
+ */
+module.exports = function (transports) {
+  var muid = uuid()
+  var index = 0
+
+
+
+  function tf (message, cb) {
+    transports[index].tf(message, cb)
+    index++
+    if (index >= transports.length) {
+      index = 0
+    }
+  }
+
+
+
+  function setMu (muInstance) {
+    transports.forEach(function (transport) {
+      transport.setMu(muInstance)
+    })
+  }
+
+
+
+  function setId (id) {
+    transports.forEach(function (transport) {
+      transport.setId(muid)
+    })
+  }
+
+
+
+  setId(muid)
+
+  return {
+    muid: muid,
+    tf: tf,
+    type: 'transport',
+    setId: setId,
+    setMu: setMu
+  }
+}
 

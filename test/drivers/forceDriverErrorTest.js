@@ -14,47 +14,35 @@
 
 'use strict'
 
-var uuid = require('uuid')
+var test = require('tap').test
+var Mu = require('../../core/core')
+var func = require('../../drivers/func')
 
 
+test('force an error with function trasport test for coverage numbers', function (t) {
+  t.plan(1)
 
-/**
- * Load balance transport adapter.
- * distributes requests round robin to each supplied transport
- */
-module.exports = function (mu, transports) {
-  var muid = uuid()
-  var index = 0
+  var mu1 = Mu()
 
+  mu1.define({role: 's1', cmd: 'one'}, function (args, cb) {
+    cb()
+  })
 
+  mu1.define({role: 's1', cmd: 'two'}, function (args, cb) {
+    cb(null, {my: 'response'})
+  })
 
-  function tf (message, cb) {
-    transports[index].tf(message, cb)
-    index++
-    if (index >= transports.length) {
-      index = 0
-    }
-  }
+  mu1.inbound('*', func())
 
+  var mu = Mu()
 
+  mu.outbound({role: 's1'}, func({target: mu1}))
 
-  function setId (id) {
-    transports.forEach(function (transport) {
-      transport.setId(muid)
-    })
-  }
-
-
-
-  setId(muid)
-
-  return {
-    muid: muid,
-    tf: tf,
-    type: 'transport',
-    setId: setId
-    // driver: driver,
-    // tearDown: tearDown
-  }
-}
-
+  mu.dispatch({role: 's1', cmd: 'one', __err: 'err'}, function () {
+  })
+  setTimeout(function () {
+    mu1.tearDown()
+    mu.tearDown()
+    t.pass('expect no response from driver fail')
+  }, 500)
+})

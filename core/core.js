@@ -19,8 +19,7 @@ var uuid = require('uuid')
 var crypto = require('crypto')
 var defaultLogger = require('./log')
 var errors = require('./err')
-var transport = require('./transport')
-
+var DEFAULT_TTL = 10
 
 
 module.exports = function (options) {
@@ -39,10 +38,25 @@ module.exports = function (options) {
 
     if (typeof tf === 'function') {
       router.addRoute(pattern, {muid: uuid(), tf: tf, type: 'handler'})
-    }
-    else {
+    } else {
       router.addRoute(pattern, tf)
     }
+  }
+
+
+
+  function inbound (pattern, tf) {
+    tf.setMu(instance)
+    tf.direction = 'inbound'
+    define(pattern, tf)
+  }
+
+
+
+  function outbound (pattern, tf) {
+    tf.setMu(instance)
+    tf.direction = 'outbound'
+    define(pattern, tf)
   }
 
 
@@ -60,9 +74,8 @@ module.exports = function (options) {
       hash.update('' + cb)
       digest = hash.digest('hex')
       router.addRoute(null, {muid: digest, tf: cb, type: 'callback'})
-      router.route({pattern: message, protocol: {path: [digest], trace: [digest], ttl: 10}}, cb)
-    }
-    else {
+      router.route({pattern: message, protocol: {path: [digest], trace: [digest], ttl: DEFAULT_TTL}}, cb)
+    } else {
       router.route(message, cb)
     }
   }
@@ -82,14 +95,17 @@ module.exports = function (options) {
 
 
   var instance = {
+    inbound: inbound,
+    outbound: outbound,
     define: define,
     dispatch: dispatch,
     tearDown: tearDown,
+
+    transports: {},
     print: print,
     log: logger,
     transportList: function () { return router.transportList() }
   }
-  instance.transports = require('../transports/transports')(instance, transport)
 
   return instance
 }
@@ -105,4 +121,3 @@ module.exports.log = {levelTrace: defaultLogger.levelTrace,
 module.exports.errors = {SERVICE_ERR: errors.SERVICE_ERR,
                          FRAMEWORK_ERR: errors.FRAMEWORK_ERR,
                          TRANSPORT_ERR: errors.TRANSPORT_ERR}
-

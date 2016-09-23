@@ -20,7 +20,7 @@ var register = {}
 /**
  * local function transport. uses a global function transport registry to connect in process mu instances
  */
-module.exports = function (sourceMu, options) {
+module.exports = function (options) {
   var instance
   var recieveCb
   var target = null
@@ -36,8 +36,7 @@ module.exports = function (sourceMu, options) {
   function send (message, cb) {
     if (message.protocol.dst === 'target') {
       target.call(message)
-    }
-    else {
+    } else {
       register[message.protocol.dst].call(message)
     }
   }
@@ -50,7 +49,11 @@ module.exports = function (sourceMu, options) {
 
 
   function call (message) {
-    recieveCb(null, message)
+    if (message && message.pattern && message.pattern.__err) {
+      recieveCb(message.pattern.__err, message)
+    } else {
+      recieveCb(null, message)
+    }
   }
 
 
@@ -67,7 +70,8 @@ module.exports = function (sourceMu, options) {
     receive: receive,
     tearDown: tearDown,
     setId: setId,
-    call: call
+    call: call,
+    recieveCb: recieveCb
   }
 
   if (options && options.target) {
@@ -80,4 +84,3 @@ module.exports = function (sourceMu, options) {
 
   return instance
 }
-

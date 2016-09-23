@@ -19,11 +19,12 @@ var EventEmitter = require('events')
 var SIGNATURE = 4242
 
 
+
 /**
  * TCP transport. Simple protocol JSON messages delinated by two byte signature and length field
  * [sig][len][JSON][sig][len][JSON]...
  */
-module.exports = function (log, options) {
+module.exports = function (options) {
   var emitter = new EventEmitter()
   var connections = {}
   var connectionsByIp = {}
@@ -33,7 +34,6 @@ module.exports = function (log, options) {
 
   /**
    * recieve callback: function(err, msg)
-   *
    * - err indicate a local transport error NOT an error from the remote
    * - msg
    */
@@ -81,13 +81,10 @@ module.exports = function (log, options) {
 
       connections[message.protocol.dst].on('error', function (err) {
         connections[message.protocol.dst] = null
-        emitter.emit('receive', err, null)
+        cb(err || null, null)
       })
     }
-
-    connections[message.protocol.dst].write(encode(message), function (err) {
-      if (err && cb) { return cb(err) }
-    })
+    connections[message.protocol.dst].write(encode(message))
   }
 
 
@@ -141,11 +138,13 @@ module.exports = function (log, options) {
         connectionsByIp[c.remoteAddress + '_' + c.remotePort] = null
       })
 
+      /*
       c.on('error', function (err) {
-        connections[connectionsByIp[c.remoteAddress + '_' + c.remotePort]] = null
+        connections[connectionsByIp[c.remoteAddress + '_' + c.remotePort]].destroy()
         connectionsByIp[c.remoteAddress + '_' + c.remotePort] = null
-        emitter.emit('receive', err, null)
+        emitter.emit('receive', err || null, null)
       })
+      */
     })
     server.listen(options.source.port, options.source.host)
   }

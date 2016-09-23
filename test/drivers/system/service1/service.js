@@ -5,7 +5,7 @@
  * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
  * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES LOSS OF USE, DATA, OR PROFITS OR BUSINESS INTERRUPTION)
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
@@ -14,18 +14,17 @@
 
 'use strict'
 
-var test = require('tap').test
-var logger = require('../../core/log')
+module.exports = function (cb) {
+  var mu = require('../../../../core/core')()
 
+  mu.define({role: 's1', cmd: 'one'}, function (args, cb) {
+    cb()
+  })
 
-test('logging', function (t) {
-  t.plan(1)
+  mu.define({role: 's1', cmd: 'two'}, function (args, cb) {
+    cb(null, {my: 'response'})
+  })
 
-  var log = logger.create(logger.levelInfo)
-  log.debug('hidden')
-  log.info('visible')
-  log.error('visible')
-  log.setLevel(logger.levelDebug)
-  t.equal(1, 1)
-})
+  cb(mu)
+}
 

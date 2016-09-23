@@ -5,7 +5,7 @@
  * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
  * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES LOSS OF USE, DATA, OR PROFITS OR BUSINESS INTERRUPTION)
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
@@ -14,48 +14,17 @@
 
 'use strict'
 
-
-module.exports = function (options) {
-  var recieveCb
-  var target
+var mu = require('../../../../core/core')()
 
 
-  function send (message, cb) {
-    target.call(message)
-  }
+module.exports = function (cb) {
 
+  mu.define({role: 's3', cmd: 'one'}, function (args, cb) {
+    mu.dispatch({role: 's1', cmd: 'two'}, function (err, result) {
+      cb(err, result)
+    })
+  })
 
-
-  function call (message) {
-    recieveCb(null, message)
-  }
-
-
-
-  function setTarget (t) {
-    target = t
-  }
-
-
-
-  function receive (cb) {
-    recieveCb = cb
-  }
-
-
-
-  function tearDown () {
-  }
-
-
-
-  return {
-    send: send,
-    receive: receive,
-    tearDown: tearDown,
-
-    setTarget: setTarget,
-    call: call
-  }
+  cb(mu)
 }
 

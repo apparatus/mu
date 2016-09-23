@@ -1,0 +1,45 @@
+/*
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+'use strict'
+
+var test = require('tap').test
+var Mu = require('../../core/core')
+var tcp = require('../../drivers/tcp')
+
+var s1 = Mu()
+
+var h1 = function (args, cb) {
+  cb()
+}
+
+s1.define({role: 's1', cmd: 'one'}, h1)
+s1.inbound({role: 's1'}, tcp.server({port: 3001, host: '127.0.0.1'}))
+
+
+test('test no service', function (t) {
+  t.plan(2)
+
+  var mu = Mu()
+  mu.outbound({role: 's1'}, tcp.client({port: 3001, host: '127.0.0.1'}))
+  mu.dispatch({role: 's1', cmd: 'one'}, function (err, result) {
+    t.equal(err, null)
+    mu.dispatch({wibble: 'fish'}, function (err, result) {
+      t.equal(err.message, 'Routing error no matching route and no defualt route provided, Message will be discarded')
+      s1.tearDown()
+      mu.tearDown()
+    })
+  })
+})
+
