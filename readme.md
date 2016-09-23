@@ -42,9 +42,9 @@ Copyright Peter Elger 2016, Licensed under [MIT][].
 
 [travis-badge]: https://travis-ci.org/apparatus/mu.svg?branch=master
 [travis-url]: https://travis-ci.org/apparatus/mu
-[npm-badge]: https://badge.fury.io/js/bloomrun.svg
-[npm-url]: https://npmjs.org/package/bloomrun
-[logo-url]: https://raw.githubusercontent.com/apparatus/mu/master/assets/bloomrun.png
+[npm-badge]: https://badge.fury.io/js/mu.svg
+[npm-url]: https://npmjs.org/package/mu
+[logo-url]: https://raw.githubusercontent.com/apparatus/mu/master/assets/mu.png
 [coveralls-badge]: https://coveralls.io/repos/apparatus/mu/badge.svg?branch=master&service=github
 [coveralls-url]: https://coveralls.io/github/apparatus/mu?branch=master
 [david-badge]: https://david-dm.org/apparatus/mu.svg
