@@ -45,7 +45,7 @@ Copyright Peter Elger 2016, Licensed under [MIT][].
 [npm-badge]: https://badge.fury.io/js/mu.svg
 [npm-url]: https://npmjs.org/package/mu
 [logo-url]: https://raw.githubusercontent.com/apparatus/mu/master/assets/mu.png
-[coveralls-badge]: https://coveralls.io/repos/apparatus/mu/badge.svg?branch=master&service=github
+[coveralls-badge]: https://coveralls.io/repos/apparatus/mu/badge.svg?branch=master
 [coveralls-url]: https://coveralls.io/github/apparatus/mu?branch=master
 [david-badge]: https://david-dm.org/apparatus/mu.svg
 [david-url]: https://david-dm.org/apparatus/mu
