@@ -38,8 +38,7 @@ module.exports = function (options) {
 
     if (typeof tf === 'function') {
       router.addRoute(pattern, {muid: uuid(), tf: tf, type: 'handler'})
-    }
-    else {
+    } else {
       router.addRoute(pattern, tf)
     }
   }
@@ -76,8 +75,7 @@ module.exports = function (options) {
       digest = hash.digest('hex')
       router.addRoute(null, {muid: digest, tf: cb, type: 'callback'})
       router.route({pattern: message, protocol: {path: [digest], trace: [digest], ttl: DEFAULT_TTL}}, cb)
-    }
-    else {
+    } else {
       router.route(message, cb)
     }
   }
@@ -123,4 +121,3 @@ module.exports.log = {levelTrace: defaultLogger.levelTrace,
 module.exports.errors = {SERVICE_ERR: errors.SERVICE_ERR,
                          FRAMEWORK_ERR: errors.FRAMEWORK_ERR,
                          TRANSPORT_ERR: errors.TRANSPORT_ERR}
-

@@ -22,7 +22,7 @@ var _ = require('lodash')
 
 /**
  * responsible for the protocol implementation
- *  {pattern: { pattern and data }, proto: { path: [1234, 4567],    trace: [1234, 4567], ttl: 9}}
+ *  {pattern: { pattern and data }, proto: { path: [1234, 4567], trace: [1234, 4567], ttl: 9}}
  *  {response: { response data }, proto: { path: [1234], dst: 4567, trace: [1234, 4567, 6789], ttl: 8}}
  */
 module.exports = function (driver) {
@@ -39,8 +39,7 @@ module.exports = function (driver) {
       // recieved an error condition from the driver, typically this signals a failed client connection or other
       // inbound connection error condition. In this case, log the error but make no attempt at further routing
       mu.log.error('node: ' + muid + ' ERROR: ', err)
-    }
-    else {
+    } else {
       mu.dispatch(msg, function (err, response) {
         var packet
 
@@ -119,4 +118,3 @@ module.exports = function (driver) {
     tearDown: tearDown
   }
 }
-
