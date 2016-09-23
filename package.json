@@ -1,36 +1,40 @@
 {
   "name": "mu",
-  "description": "fullstack microservices framework",
-  "keywords": [
-    "microservices",
-    "fullstack"
-  ],
+  "description": "A message based router for building distributed systems",
   "version": "0.0.1",
   "license": "MIT",
-  "author": "Peter Elger (http://nearform.com/)",
+  "author": "Peter Elger (https://github.com/pelger)",
   "contributors": [
-    "Peter Elger <elger.peter@gmail.com> (http://peterelger.com/)",
-    "David Mark Clements <david.clements@nearform.com>"
+    "David Mark Clements (https://github.com/davidmarkclements)",
+    "Dean McDonnell (https://github.com/mcdonnelldean)"
   ],
+  "keywords": [
+    "microservices",
+    "messaging",
+    "router",
+    "distributed"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apparatus/mu.git"
+  },
   "main": "./core/core.js",
   "engines": {
-    "node": "*"
+    "node": ">=4.0.0"
+  },
+  "scripts": {
+    "lint": "jshint **/*.js",
+    "test": "tap test/**/*Test.js",
+    "coverage": "tap test/**/*Test.js --cov --coverage-report=html",
+    "coveralls": "tap test/**/*Test.js --cov --coverage-report=text-lcov | coveralls "
   },
   "dependencies": {
     "lodash": "^4.13.1",
     "patrun": "^0.5.0",
     "uuid": "^2.0.2"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/apparatus/mu.git"
-  },
-  "scripts": {
-    "lint": "jshint **/*.js",
-    "test": "tap test/**/*Test.js",
-    "coverage": "tap test/**/*Test.js --cov --coverage-report=html"
-  },
   "devDependencies": {
+    "coveralls": "^2.11.14",
     "tap": "^7.1.2"
   }
 }
