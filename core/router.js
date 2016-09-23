@@ -37,8 +37,7 @@ module.exports = function (logger) {
       if (_.isString(pattern) && pattern === '*') {
         logger.debug('adding default route')
         defaultTf = tf
-      }
-      else {
+      } else {
         patrun.add(pattern, tf)
       }
     }
@@ -75,8 +74,7 @@ module.exports = function (logger) {
           tf.tf(message, function (err, response) {
             cb(err || null, response || {})
           })
-        }
-        else if (tf.type === 'transport') {
+        } else if (tf.type === 'transport') {
 
           // update the repsponse routing information
           if (!idmap['' + message.protocol.path[message.protocol.path.length - 1]] && message.protocol.inboundIfc) {
@@ -90,22 +88,19 @@ module.exports = function (logger) {
             tf.tf(message, function (err) {
               if (err) { return cb(err) }
             })
-          }
-          else {
+          } else {
             logger.error('Routing error: no valid outbound route or handler available. Message will be discarded')
             cb({type: errors.TRANSPORT_ERR, message: 'Routing error: no valid outbound route available. Message will be discarded'})
           }
         }
-      }
-      else {
+      } else {
 
         // unable to find a route, discard message
         logger.error('Routing error no matching route and no defualt route provided, Message will be discarded')
         logger.debug(JSON.stringify(message))
         cb({type: errors.TRANSPORT_ERR, message: 'Routing error no matching route and no defualt route provided, Message will be discarded', data: message})
       }
-    }
-    else if (message && message.response) {
+    } else if (message && message.response) {
 
       // we are routing a response message as there is a response block on the message and no pattern block
       assert(message.protocol)
@@ -119,21 +114,18 @@ module.exports = function (logger) {
         // so call the tf and invoke the local callback once the message has been sent
         if (idmap[muid].type === 'callback') {
           idmap[muid].tf(message.response.err || null, message.response)
-        }
-        else {
+        } else {
           idmap[muid].tf(message, function (err, response) {
             cb(err, response)
           })
         }
-      }
-      else {
+      } else {
 
         // there is no available transport or handler for this mu id, this should never happen, discard the packet...
         logger.error('routing error no available response transport function for: ' + JSON.stringify(message))
         cb('routing error no available response transport function for: ' + JSON.stringify(message))
       }
-    }
-    else {
+    } else {
 
       // missing both pattern and response fields, this should never happen, discard packet...
       logger.error('Malformed packet no pattern or response field. Message will be discarded')
@@ -196,4 +188,3 @@ module.exports = function (logger) {
     transportList: transportList
   }
 }
-
