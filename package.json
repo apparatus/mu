@@ -1,7 +1,7 @@
 {
   "name": "mu",
   "description": "A message based router for building distributed systems",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "license": "MIT",
   "author": "Peter Elger (https://github.com/pelger)",
   "contributors": [
