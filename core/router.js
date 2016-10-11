@@ -14,6 +14,7 @@
 
 'use strict'
 
+var bloomrun = require('bloomrun')
 var assert = require('assert')
 var _ = require('lodash')
 var errors = require('./err')
@@ -24,8 +25,7 @@ var errors = require('./err')
  * pattern router. responsible for the routing table
  */
 module.exports = function (logger) {
-  var patrun = require('patrun')()
-  var defaultTf = null
+  var run = bloomrun({ indexing: 'depth' })
   var idmap = {}
 
 
@@ -36,9 +36,9 @@ module.exports = function (logger) {
     if (pattern) {
       if (_.isString(pattern) && pattern === '*') {
         logger.debug('adding default route')
-        defaultTf = tf
+        run.default(tf)
       } else {
-        patrun.add(pattern, tf)
+        run.add(pattern, tf)
       }
     }
     idmap['' + tf.muid] = tf
@@ -56,12 +56,7 @@ module.exports = function (logger) {
     if (message && message.pattern) {
 
       // we are routing an outbound message as there is a pattern attached to the message
-      var tf = patrun.find(message.pattern)
-
-      if (!tf && defaultTf) {
-        logger.debug('using default route for: ' + message.pattern)
-        tf = defaultTf
-      }
+      var tf = run.lookup(message.pattern)
 
       if (tf) {
 
@@ -137,14 +132,11 @@ module.exports = function (logger) {
 
 
   var tearDown = function tearDown () {
-    patrun.list().forEach(function (el) {
-      if (el.data && el.data.tearDown) {
-        el.data.tearDown()
+    run.list().forEach(function (el) {
+      if (el.tearDown) {
+        el.tearDown()
       }
     })
-    if (defaultTf && defaultTf.tearDown) {
-      defaultTf.tearDown()
-    }
   }
 
 
@@ -152,12 +144,9 @@ module.exports = function (logger) {
   var transportList = function transportList () {
     var result = []
 
-    patrun.list().forEach(function (el) {
+    run.list().forEach(function (el) {
       result.push(el)
     })
-    if (defaultTf) {
-      result.push(defaultTf)
-    }
 
     return result
   }
@@ -168,13 +157,14 @@ module.exports = function (logger) {
     var result = ''
 
     result += 'patterns:\n'
-    patrun.list().forEach(function (el) {
-      result += JSON.stringify(el.match) + ' : ' + el.data.muid + ' (' + el.data.type + ')' + '\n'
+    run.list(null, { payloads: true, patterns: true }).forEach(function (el) {
+      if (el.default) {
+        result += '*'
+      } else {
+        result += JSON.stringify(el.pattern)
+      }
+      result += ' : ' + el.payload.muid + ' (' + el.payload.type + ')' + '\n'
     })
-    if (defaultTf) {
-      result += '* : ' + defaultTf.muid + ' (' + defaultTf.type + ')' + '\n'
-    }
-
     return result
   }
 
