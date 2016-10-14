@@ -28,14 +28,13 @@ module.exports = function (logger) {
   var defaultTf = null
   var idmap = {}
 
-
   var addRoute = function addRoute (pattern, tf) {
     assert(tf, 'addRoute requires a valid handler or transport function')
     assert(tf.type && (tf.type === 'handler' || tf.type === 'transport' || tf.type === 'callback'), 'addRoute requires a known type')
 
     if (pattern) {
       if (_.isString(pattern) && pattern === '*') {
-        logger.debug('adding default route')
+        logger.debug(pattern, 'adding default route')
         defaultTf = tf
       } else {
         patrun.add(pattern, tf)
@@ -59,7 +58,7 @@ module.exports = function (logger) {
       var tf = patrun.find(message.pattern)
 
       if (!tf && defaultTf) {
-        logger.debug('using default route for: ' + message.pattern)
+        logger.debug(message, 'using default route for')
         tf = defaultTf
       }
 
@@ -70,7 +69,7 @@ module.exports = function (logger) {
         // process instance or more likely in transport.js. This will pack the error and response paramters into
         // a protocol packet send
         if (tf.type === 'handler') {
-          logger.debug('handling message: ' + JSON.stringify(message))
+          logger.debug(message, 'handling message')
           tf.tf(message, function (err, response) {
             cb(err || null, response || {})
           })
@@ -97,7 +96,7 @@ module.exports = function (logger) {
 
         // unable to find a route, discard message
         logger.error('Routing error no matching route and no defualt route provided, Message will be discarded')
-        logger.debug(JSON.stringify(message))
+        logger.debug(message, 'discarded message')
         cb({type: errors.TRANSPORT_ERR, message: 'Routing error no matching route and no defualt route provided, Message will be discarded', data: message})
       }
     } else if (message && message.response) {
@@ -122,14 +121,14 @@ module.exports = function (logger) {
       } else {
 
         // there is no available transport or handler for this mu id, this should never happen, discard the packet...
-        logger.error('routing error no available response transport function for: ' + JSON.stringify(message))
+        logger.error(message, 'routing error no available response transport function for')
         cb('routing error no available response transport function for: ' + JSON.stringify(message))
       }
     } else {
 
       // missing both pattern and response fields, this should never happen, discard packet...
-      logger.error('Malformed packet no pattern or response field. Message will be discarded')
-      logger.debug(JSON.stringify(message))
+      logger.error('malformed packet no pattern or response field. Message will be discarded')
+      logger.debug(message, 'malformed message')
       cb({type: errors.TRANSPORT_ERR, message: 'Malformed packet no pattern or response field. Message will be discarded', data: message})
     }
   }
