@@ -36,8 +36,7 @@ module.exports = function (options) {
   function send (message, cb) {
     if (message.protocol.dst === 'target') {
       target.call(message)
-    }
-    else {
+    } else {
       register[message.protocol.dst].call(message)
     }
   }
@@ -52,8 +51,7 @@ module.exports = function (options) {
   function call (message) {
     if (message && message.pattern && message.pattern.__err) {
       recieveCb(message.pattern.__err, message)
-    }
-    else {
+    } else {
       recieveCb(null, message)
     }
   }
@@ -86,4 +84,3 @@ module.exports = function (options) {
 
   return instance
 }
-

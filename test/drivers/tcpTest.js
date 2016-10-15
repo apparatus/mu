@@ -46,5 +46,3 @@ test('consume services with tcp transport test', function (t) {
     })
   })
 })
-
-
