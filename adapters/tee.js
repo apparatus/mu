@@ -15,7 +15,7 @@
 'use strict'
 
 var uuid = require('uuid')
-var _ = require('lodash')
+var cloneDeep = require('lodash.clonedeep')
 
 
 
@@ -29,7 +29,7 @@ module.exports = function (transports) {
 
   function tf (message, cb) {
     for (var index = 0; index < transports.length; ++index) {
-      transports[index].tf(_.cloneDeep(message), cb)
+      transports[index].tf(cloneDeep(message), cb)
     }
   }
 
