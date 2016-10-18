@@ -32,6 +32,7 @@
   "dependencies": {
     "bloomrun": "^2.3.0",
     "lodash": "^4.13.1",
+    "pino": "^2.12.3",
     "uuid": "^2.0.2"
   },
   "devDependencies": {

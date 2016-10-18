@@ -17,17 +17,17 @@
 var assert = require('assert')
 var uuid = require('uuid')
 var crypto = require('crypto')
-var defaultLogger = require('./log')
+var pino = require('pino')
 var errors = require('./err')
 var DEFAULT_TTL = 10
 
 
 module.exports = function (options) {
-  var logger = (options && options.logger) || defaultLogger.create(defaultLogger.levelInfo)
+  var logger = (options && options.logger) || pino()
   var router = require('./router')(logger)
 
   if (options && options.logLevel) {
-    logger.setLevel(options.logLevel)
+    logger.level = options.logLevel
   }
 
 
@@ -110,13 +110,11 @@ module.exports = function (options) {
   return instance
 }
 
+module.exports.log = Object.keys(pino.levels.values).reduce((acc, key) => {
+  acc['level' + key[0].toUpperCase() + key.slice(1)] = key
+  return acc
+}, {})
 
-module.exports.log = {levelTrace: defaultLogger.levelTrace,
-                      levelDebug: defaultLogger.levelDebug,
-                      levelInfo: defaultLogger.levelInfo,
-                      levelWarn: defaultLogger.levelWarn,
-                      levelError: defaultLogger.levelError,
-                      levelFatal: defaultLogger.levelFatal}
 
 module.exports.errors = {SERVICE_ERR: errors.SERVICE_ERR,
                          FRAMEWORK_ERR: errors.FRAMEWORK_ERR,

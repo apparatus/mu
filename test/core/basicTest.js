@@ -22,7 +22,7 @@ var func = require('../../drivers/func')
 test('local handler test', function (t) {
   t.plan(6)
 
-  var mu = Mu({logLevel: Mu.log.levelInfo})
+  var mu = Mu({ logLevel: Mu.log.levelInfo })
 
   mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
     t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')

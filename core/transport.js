@@ -29,16 +29,18 @@ module.exports = function (driver) {
   var muid = uuid()
   var mu
 
+  var logger
+
   driver.setId(muid)
   driver.receive(function (err, msg) {
-    mu.log.debug('node: ' + muid + ' <- ' + JSON.stringify(msg))
+    logger.debug({ in: msg }, 'message received')
     msg.protocol.inboundIfc = muid
 
     if (err) {
 
       // recieved an error condition from the driver, typically this signals a failed client connection or other
       // inbound connection error condition. In this case, log the error but make no attempt at further routing
-      mu.log.error('node: ' + muid + ' ERROR: ', err)
+      logger.error(err)
     } else {
       mu.dispatch(msg, function (err, response) {
         var packet
@@ -54,7 +56,7 @@ module.exports = function (driver) {
         packet.protocol.trace.push(muid)
         packet.protocol.src = muid
         packet.protocol.dst = packet.protocol.path.pop()
-        mu.log.debug('node: ' + muid + ' -> ' + JSON.stringify(packet))
+        logger.debug({ out: packet }, 'sending response')
         driver.send(packet)
       })
     }
@@ -82,7 +84,7 @@ module.exports = function (driver) {
     message.protocol.src = muid
     message.protocol.trace.push(muid)
 
-    mu.log.debug('node: ' + muid + ' -> ' + JSON.stringify(message))
+    logger.debug({ out: message }, 'sending via transport driver')
     driver.send(message, function (err) {
       if (err) { return cb(err) }
     })
@@ -92,12 +94,16 @@ module.exports = function (driver) {
 
   function setMu (muInstance) {
     mu = muInstance
+    logger = mu.log.child({ muid })
   }
 
 
 
   function setId (id) {
     muid = id
+    if (mu) {
+      logger = mu.log.child({ muid })
+    }
   }
 
 
