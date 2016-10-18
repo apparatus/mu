@@ -30,8 +30,8 @@
     "coveralls": "tap test/**/*Test.js --cov --coverage-report=text-lcov | coveralls"
   },
   "dependencies": {
+    "bloomrun": "^2.3.0",
     "lodash": "^4.13.1",
-    "patrun": "^0.5.0",
     "pino": "^2.12.3",
     "uuid": "^2.0.2"
   },
