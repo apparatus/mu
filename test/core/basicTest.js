@@ -64,7 +64,7 @@ test('route print test', function (t) {
   })
 
   var routing = mu.print()
-  t.notEqual(routing.indexOf('{"cmd":"one","role":"test"}'), -1)
-  t.notEqual(routing.indexOf('{"cmd":"two","role":"test"}'), -1)
+  t.notEqual(routing.indexOf('{"role":"test","cmd":"one"}'), -1)
+  t.notEqual(routing.indexOf('{"role":"test","cmd":"two"}'), -1)
 })
 
