@@ -94,7 +94,7 @@ module.exports = function (driver) {
 
   function setMu (muInstance) {
     mu = muInstance
-    logger = mu.log.child({ muid })
+    logger = mu.log.child({muid: muid})
   }
 
 
@@ -102,7 +102,7 @@ module.exports = function (driver) {
   function setId (id) {
     muid = id
     if (mu) {
-      logger = mu.log.child({ muid })
+      logger = mu.log.child({muid: muid})
     }
   }
 
