@@ -16,8 +16,7 @@
 
 var assert = require('assert')
 var uuid = require('uuid')
-var _ = require('lodash')
-
+var cloneDeep = require('lodash.clonedeep')
 
 
 /**
@@ -45,14 +44,14 @@ module.exports = function (driver) {
       mu.dispatch(msg, function (err, response) {
         var packet
 
-        var message = _.cloneDeep(msg)
+        var message = cloneDeep(msg)
         if (!response) {
           response = {}
         }
         if (err) {
           response.err = err
         }
-        packet = {response: _.cloneDeep(response), protocol: message.protocol}
+        packet = {response: cloneDeep(response), protocol: message.protocol}
         packet.protocol.trace.push(muid)
         packet.protocol.src = muid
         packet.protocol.dst = packet.protocol.path.pop()
@@ -69,7 +68,7 @@ module.exports = function (driver) {
     assert(msg.protocol)
     assert(cb && (typeof cb === 'function'), 'transport requries a valid callback handler')
 
-    var message = _.cloneDeep(msg)
+    var message = cloneDeep(msg)
 
     if (message.pattern) {
       message.protocol.path.push(muid)
