@@ -23,7 +23,6 @@ var EventEmitter = require('events')
  */
 module.exports = function (options) {
   var emitter = new EventEmitter()
-  var connections = {}
   var server
 
   /**
@@ -36,57 +35,74 @@ module.exports = function (options) {
   }
 
   function send (message, cb) {
-    if (!connections[message.protocol.dst]) {
-      connections[message.protocol.dst] = http.request({
-        port: options.target.port,
-        hostname: options.target.host,
-        method: 'POST',
-        path: '/'
-      })
-
-      connections[message.protocol.dst].on('response', function (response) {
-        var body = []
-        var inbound
-
-        response.on('data', function (chunk) {
-          body.push(chunk)
-        })
-
-        response.on('end', function () {
-          inbound = Buffer.concat(body)
-          emitter.emit('receive', null, inbound.data)
-        })
-      })
-
-      connections[message.protocol.dst].on('error', function (err) {
-        connections[message.protocol.dst] = null
-        cb(err || null, null)
-      })
+    // Note: due to lack of documentation, I'm unable to follow the router logic here
+    // seems this is triggered after emitting the recieve event on a response back from the server
+    // putting in this if statements prevents it from hanging, but causes a loop
+    if (!options.target) {
+      return
     }
 
-    connections[message.protocol.dst].write(JSON.stringify(message))
-
-    connections[message.protocol.dst].end(function () {
-      connections[message.protocol.dst] = null
+    // construct http request object
+    // Note: https here can be a secondary option
+    // Note: will be nice to add TLS certificate signing feature here
+    let req = http.request({
+      port: options.target.port,
+      hostname: options.target.host,
+      method: 'POST',
+      path: '/', // Note: would be nice to relate URL paths to message paths as generated in the router
+      headers: {
+        'Content-Type': 'application/json'
+      }
     })
+
+    // process the responses
+    req.on('response', function (response) {
+      var body = []
+      var inbound
+
+      response.on('data', function (chunk) {
+        body.push(chunk)
+      })
+
+      response.on('end', function () {
+        inbound = JSON.parse(Buffer.concat(body))
+
+        // Note: this is the part that causes the loops as per the first note
+        emitter.emit('receive', null, inbound)
+      })
+    })
+
+    req.on('error', function (err) {
+      cb(err || null, null)
+    })
+
+    // send the message
+    req.write(JSON.stringify(message))
   }
 
   function listen () {
     server = http.createServer()
-    server.on('request', (request, response) => {
+    server.on('request', function (request, response) {
       var body = []
       var inbound
 
+      // capture the request data
       request.on('data', function (chunk) {
         body.push(chunk)
       })
 
+      // process the request data
       request.on('end', function () {
         inbound = JSON.parse(Buffer.concat(body))
-        emitter.emit('receive', null, inbound.data)
 
-        response.writeHead(200, { 'Content-Type': 'text/plain' })
-        response.end('ok')
+        emitter.emit('receive', null, inbound)
+
+        // send headers and prep to close the connection
+        response.writeHead(200, { 'Content-Type': 'application/json' })
+
+        // Note: this doesn't feel right, going by the example of the tcp driver
+        // there shouldn't be a manual response, yet it's needed by http
+        response.end(JSON.stringify(inbound))
       })
     })
 
@@ -94,12 +110,6 @@ module.exports = function (options) {
   }
 
   function tearDown () {
-    // for (var conn in connections) {
-    //   if (connections[conn]) {
-    //     connections[conn].end()
-    //   }
-    // }
-
     if (server) {
       server.close()
     }

@@ -12,6 +12,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+// Note: this is a clone of the tcp test
+
 'use strict'
 
 var test = require('tap').test
@@ -20,6 +22,7 @@ var http = require('../../drivers/http')
 function init (cb) {
   require('./system/service1/service')(function (s1) {
     s1.inbound('*', http.server({port: 3001, host: '127.0.0.1'}))
+
     require('./system/service2/service')(function (s2) {
       s2.inbound('*', http.server({port: 3002, host: '127.0.0.1'}))
       cb(s1, s2)
@@ -34,6 +37,7 @@ test('consume services with http transport test', function (t) {
     var consumer = require('./system/consumer/consumer')()
     consumer.mu.outbound({role: 's1'}, http.client({port: 3001, host: '127.0.0.1'}))
     consumer.mu.outbound({role: 's2'}, http.client({port: 3002, host: '127.0.0.1'}))
+
     consumer.consume(function (err, result) {
       t.equal(err, null, 'check err is null')
       consumer.mu.tearDown()
