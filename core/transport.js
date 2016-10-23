@@ -18,7 +18,6 @@ var assert = require('assert')
 var uuid = require('uuid')
 var cloneDeep = require('lodash.clonedeep')
 
-
 /**
  * responsible for the protocol implementation
  *  {pattern: { pattern and data }, proto: { path: [1234, 4567], trace: [1234, 4567], ttl: 9}}
@@ -29,29 +28,37 @@ module.exports = function (createDriver, mu, opts) {
   var direction = opts.direction
   var muid = opts.id || uuid()
   var logger = mu.log.child({muid: muid})
-
   var driver = createDriver({id: muid}, recieve)
+
+  return {
+    muid: muid,
+    tf: tf,
+    direction: direction,
+    type: 'transport',
+    driver: driver,
+    tearDown: driver.tearDown
+  }
 
   function recieve (err, msg) {
     logger.debug({in: msg}, 'message received')
     msg.protocol.inboundIfc = muid
 
     if (err) {
-      // received an error condition from the driver, 
+      // received an error condition from the driver,
       // typically this signals a failed client connection
-      // or other inbound connection error condition. 
+      // or other inbound connection error condition.
       // In this case, log the error but make no attempt at
       // further routing
       logger.error(err)
       return
-    } 
+    }
     mu.dispatch(msg, function (err, response) {
       var packet
       var message = cloneDeep(msg)
       response = response || {}
       if (err) { response.err = err }
       packet = {
-        response: cloneDeep(response), 
+        response: cloneDeep(response),
         protocol: message.protocol
       }
       packet.protocol.trace.push(muid)
@@ -65,7 +72,7 @@ module.exports = function (createDriver, mu, opts) {
   function tf (msg, cb) {
     assert(msg)
     assert(msg.protocol)
-    assert(cb && (typeof cb === 'function'), 
+    assert(cb && (typeof cb === 'function'),
       'transport requires a valid callback handler')
 
     var message = cloneDeep(msg)
@@ -85,14 +92,5 @@ module.exports = function (createDriver, mu, opts) {
 
     logger.debug({out: message}, 'sending via transport driver')
     driver.send(message, cb)
-  }
-
-  return {
-    muid: muid,
-    tf: tf,
-    direction: direction,
-    type: 'transport',
-    driver: driver,
-    tearDown: driver.tearDown
   }
 }

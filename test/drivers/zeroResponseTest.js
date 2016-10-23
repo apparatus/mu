@@ -17,11 +17,10 @@
 var test = require('tap').test
 var tcp = require('../../drivers/tcp')
 var rcc = require('./system/consumer/responseCountConsumer')()
-
-
+var zrs = require('./system/zeroResponseService/service')
 
 function initTcp (cb) {
-  require('./system/zeroResponseService/service')(function (zero) {
+  zrs(function (zero) {
     zero.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))
     require('./system/multiResponseService/service')(function (multi) {
       multi.inbound('*', tcp.server({port: 3002, host: '127.0.0.1'}))
@@ -29,8 +28,6 @@ function initTcp (cb) {
     })
   })
 }
-
-
 
 test('consume services expect no response', function (t) {
   t.plan(1)

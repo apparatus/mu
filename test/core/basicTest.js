@@ -18,7 +18,6 @@ var test = require('tap').test
 var createMu = require('../../core/core')
 var func = require('../../drivers/func')
 
-
 test('local handler test', function (t) {
   t.plan(6)
 
@@ -44,8 +43,6 @@ test('local handler test', function (t) {
     t.deepEqual({my: 'response'}, result, 'check result')
   })
 })
-
-
 
 test('route print test', function (t) {
   t.plan(2)

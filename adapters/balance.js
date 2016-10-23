@@ -16,8 +16,6 @@
 
 var uuid = require('uuid')
 
-
-
 /**
  * Load balance transport adapter.
  * distributes requests round robin to each supplied transport
@@ -32,19 +30,19 @@ module.exports = function balance (transports) {
       return t(mu, {direction: direction, id: muid})
     })
 
+    return {
+      direction: transports[0].direction,
+      muid: muid,
+      tf: tf,
+      type: 'transport'
+    }
+
     function tf (message, cb) {
       transports[index].tf(message, cb)
       index++
       if (index >= transports.length) {
         index = 0
       }
-    }
-
-    return {
-      direction: transports[0].direction,
-      muid: muid,
-      tf: tf,
-      type: 'transport'
     }
   }
 }

@@ -18,8 +18,6 @@ var net = require('net')
 var EventEmitter = require('events')
 var SIGNATURE = 4242
 
-
-
 /**
  * TCP transport. Simple protocol JSON messages delinated by two byte signature and length field
  * [sig][len][JSON][sig][len][JSON]...
@@ -34,13 +32,20 @@ module.exports = function createTcpDriver (options) {
       cb = opts
     }
     opts = opts || {}
-    /**
-     * recieve callback: function(err, msg)
-     * - err indicate a local transport error NOT an error from the remote
-     * - msg
-     */
+    // receive callback: function(err, msg)
+    // - err indicate a local transport error
+    // NOT an error from the remote
     emitter.on('receive', cb)
 
+    if (options.source && options.source.host && options.source.port) {
+      listen()
+    }
+
+    return {
+      type: 'tcp',
+      send: send,
+      tearDown: tearDown
+    }
 
     function encode (message) {
       var payload = JSON.stringify(message)
@@ -51,8 +56,6 @@ module.exports = function createTcpDriver (options) {
       buf.write(payload, 4, 'ascii')
       return buf
     }
-
-
 
     function send (message, cb) {
       if (!connections[message.protocol.dst]) {
@@ -86,8 +89,6 @@ module.exports = function createTcpDriver (options) {
       connections[message.protocol.dst].write(encode(message))
     }
 
-
-
     function parse (buf, index) {
       var byteLength
       var sig = false
@@ -110,8 +111,6 @@ module.exports = function createTcpDriver (options) {
       }
       return {index: index + byteLength - 4, data: result}
     }
-
-
 
     function listen () {
       server = net.createServer(function (c) {
@@ -148,8 +147,6 @@ module.exports = function createTcpDriver (options) {
       server.listen(options.source.port, options.source.host)
     }
 
-
-
     function tearDown () {
       for (var conn in connections) {
         if (connections[conn]) {
@@ -159,18 +156,6 @@ module.exports = function createTcpDriver (options) {
       if (server) {
         server.close()
       }
-    }
-
-
-
-    if (options.source && options.source.host && options.source.port) {
-      listen()
-    }
-
-    return {
-      type: 'tcp',
-      send: send,
-      tearDown: tearDown
     }
   }
 }

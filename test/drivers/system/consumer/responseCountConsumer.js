@@ -14,11 +14,9 @@
 
 'use strict'
 
-
 var mu = require('../../../../core/core')()
 
 module.exports = function () {
-
   function consumeZero (cb) {
     mu.dispatch({role: 'zero', cmd: 'one'}, function () {
       cb(false)

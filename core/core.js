@@ -22,7 +22,6 @@ var errors = require('./err')
 var createRouter = require('./router')
 var DEFAULT_TTL = 10
 
-
 function createMu (options) {
   var logger = (options && options.logger) || pino()
   var router = createRouter(logger)
@@ -31,6 +30,18 @@ function createMu (options) {
     logger.level = options.logLevel
   }
 
+  var instance = {
+    inbound: inbound,
+    outbound: outbound,
+    define: define,
+    dispatch: dispatch,
+    tearDown: router.tearDown,
+    print: router.print,
+    log: logger,
+    transports: router.transports
+  }
+
+  return instance
 
   function define (pattern, tf) {
     assert(pattern, 'define requires a valid pattern')
@@ -70,26 +81,12 @@ function createMu (options) {
       router.route(message, cb)
     }
   }
-
-  var instance = {
-    inbound: inbound,
-    outbound: outbound,
-    define: define,
-    dispatch: dispatch,
-    tearDown: router.tearDown,
-    print: router.print,
-    log: logger,
-    transports: router.transports
-  }
-
-  return instance
 }
 
 createMu.log = Object.keys(pino.levels.values).reduce((acc, key) => {
   acc['level' + key[0].toUpperCase() + key.slice(1)] = key
   return acc
 }, {})
-
 
 createMu.errors = {
   SERVICE_ERR: errors.SERVICE_ERR,

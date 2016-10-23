@@ -16,18 +16,16 @@
 
 var register = {}
 
-
 /**
- * local function transport. 
- * uses a singleton transport registry to connect to in 
+ * local function transport.
+ * uses a singleton transport registry to connect to in
  * process mu instances
  */
 module.exports = function createFunctionDriver (options) {
   return function functionDriver (opts, cb) {
-    var instance
-    var target = options && options.target && 
+    var target = options && options.target &&
       options.target.transports().filter(function (transport) {
-        return (transport.driver && 
+        return (transport.driver &&
           transport.driver.type === 'func')
       })
     target = target && target[target.length - 1].driver
@@ -35,10 +33,20 @@ module.exports = function createFunctionDriver (options) {
     opts = opts || {}
     var id = opts.id
 
+    register[id] = {
+      type: 'func',
+      send: send,
+      call: call,
+      recieveCb: cb,
+      tearDown: tearDown
+    }
+
+    return register[id]
+
     function send (message, cb) {
-      var tx = message.protocol.dst === 'target' ? 
-        target :
-        register[message.protocol.dst]
+      var tx = message.protocol.dst === 'target'
+        ? target
+        : register[message.protocol.dst]
       tx.call(message)
     }
 
@@ -50,14 +58,6 @@ module.exports = function createFunctionDriver (options) {
       }
     }
 
-    register[id] = {
-      type: 'func',
-      send: send,
-      call: call,
-      recieveCb: cb,
-      tearDown: function () {}
-    }
-
-    return register[id]
+    function tearDown () {}
   }
 }

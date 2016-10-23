@@ -18,10 +18,8 @@ var test = require('tap').test
 var createMu = require('../../core/core')
 var func = require('../../drivers/func')
 
-
 test('local handler test', function (t) {
   t.plan(6)
-
 
   // service
   var mus = createMu()
@@ -36,11 +34,9 @@ test('local handler test', function (t) {
   })
   mus.inbound('*', func())
 
-
   // consumer
   var mu = createMu()
   mu.outbound('*', func({target: mus}))
-
 
   // execute
   mu.dispatch({role: 'test', cmd: 'one', fish: 'cheese'}, function (err, result) {
