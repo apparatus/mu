@@ -31,8 +31,18 @@ function init (cb) {
   })
 }
 
+  // console.log(
+  //   balance([tcp.client({port: 3001, host: '127.0.0.1'}),
+  //            tcp.client({port: 3002, host: '127.0.0.1'})]) + ''
+  // )
+
+  // console.log(
+  //   tcp.client({port: 3001, host: '127.0.0.1'}) + ''
+  // )
+
 
 test('consume services with tcp balancer adapter', function (t) {
+
   t.plan(2)
 
   init(function (s1, s2) {
@@ -48,5 +58,5 @@ test('consume services with tcp balancer adapter', function (t) {
       })
     })
   })
-})
+}) 
 

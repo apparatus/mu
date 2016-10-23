@@ -26,7 +26,7 @@ module.exports = function (logger) {
   var run = bloomrun({ indexing: 'depth' })
   var idmap = {}
 
-  var addRoute = function addRoute (pattern, tf) {
+  function addRoute (pattern, tf) {
     assert(tf, 'addRoute requires a valid handler or transport function')
     assert(tf.type && (tf.type === 'handler' || tf.type === 'transport' || tf.type === 'callback'), 'addRoute requires a known type')
 
@@ -46,7 +46,7 @@ module.exports = function (logger) {
   /**
    * main routing function
    */
-  var route = function route (message, cb) {
+  function route (message, cb) {
     assert(message, 'route requries a valid message')
     assert(cb && (typeof cb === 'function'), 'route requries a valid callback handler')
 
@@ -128,7 +128,7 @@ module.exports = function (logger) {
 
 
 
-  var tearDown = function tearDown () {
+  function tearDown () {
     run.list().forEach(function (el) {
       if (el.tearDown) {
         el.tearDown()
@@ -138,7 +138,7 @@ module.exports = function (logger) {
 
 
 
-  var transportList = function transportList () {
+  function transports () {
     var result = []
 
     run.list().forEach(function (el) {
@@ -150,7 +150,7 @@ module.exports = function (logger) {
 
 
 
-  var print = function print () {
+  function print () {
     var result = ''
 
     result += 'patterns:\n'
@@ -165,13 +165,11 @@ module.exports = function (logger) {
     return result
   }
 
-
-
   return {
     addRoute: addRoute,
     route: route,
     tearDown: tearDown,
     print: print,
-    transportList: transportList
+    transports: transports
   }
 }

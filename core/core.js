@@ -19,12 +19,13 @@ var uuid = require('uuid')
 var crypto = require('crypto')
 var pino = require('pino')
 var errors = require('./err')
+var createRouter = require('./router')
 var DEFAULT_TTL = 10
 
 
-module.exports = function (options) {
+function createMu (options) {
   var logger = (options && options.logger) || pino()
-  var router = require('./router')(logger)
+  var router = createRouter(logger)
 
   if (options && options.logLevel) {
     logger.level = options.logLevel
@@ -43,23 +44,13 @@ module.exports = function (options) {
     }
   }
 
-
-
   function inbound (pattern, tf) {
-    tf.setMu(instance)
-    tf.direction = 'inbound'
-    define(pattern, tf)
+    define(pattern, tf(instance, {direction: 'inbound'}))
   }
-
-
 
   function outbound (pattern, tf) {
-    tf.setMu(instance)
-    tf.direction = 'outbound'
-    define(pattern, tf)
+    define(pattern, tf(instance, {direction: 'outbound'}))
   }
-
-
 
   function dispatch (message, cb) {
     var hash
@@ -80,42 +71,30 @@ module.exports = function (options) {
     }
   }
 
-
-
-  function tearDown () {
-    router.tearDown()
-  }
-
-
-
-  function print () {
-    return router.print()
-  }
-
-
-
   var instance = {
     inbound: inbound,
     outbound: outbound,
     define: define,
     dispatch: dispatch,
-    tearDown: tearDown,
-
-    transports: {},
-    print: print,
+    tearDown: router.tearDown,
+    print: router.print,
     log: logger,
-    transportList: function () { return router.transportList() }
+    transports: router.transports
   }
 
   return instance
 }
 
-module.exports.log = Object.keys(pino.levels.values).reduce((acc, key) => {
+createMu.log = Object.keys(pino.levels.values).reduce((acc, key) => {
   acc['level' + key[0].toUpperCase() + key.slice(1)] = key
   return acc
 }, {})
 
 
-module.exports.errors = {SERVICE_ERR: errors.SERVICE_ERR,
-                         FRAMEWORK_ERR: errors.FRAMEWORK_ERR,
-                         TRANSPORT_ERR: errors.TRANSPORT_ERR}
+createMu.errors = {
+  SERVICE_ERR: errors.SERVICE_ERR,
+  FRAMEWORK_ERR: errors.FRAMEWORK_ERR,
+  TRANSPORT_ERR: errors.TRANSPORT_ERR
+}
+
+module.exports = createMu

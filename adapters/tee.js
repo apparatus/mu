@@ -22,43 +22,28 @@ var cloneDeep = require('lodash.clonedeep')
 /**
  * Tee transport adapter. Sends request to each supplied transport
  */
-module.exports = function (transports) {
-  var muid = uuid()
+module.exports = function tee (transports) {
+  return function adapter (mu, opts) {
+    opts = opts || {}
+    var direction = opts.direction
+    var muid = opts.id || uuid()
 
+    transports = transports.map(function (t) {
+      return t(mu, {direction: direction, id: muid})
+    })
 
-
-  function tf (message, cb) {
-    for (var index = 0; index < transports.length; ++index) {
-      transports[index].tf(cloneDeep(message), cb)
+    function tf (message, cb) {
+      for (var index = 0; index < transports.length; ++index) {
+        transports[index].tf(cloneDeep(message), cb)
+      }
     }
-  }
 
-
-
-  function setMu (muInstance) {
-    transports.forEach(function (transport) {
-      transport.setMu(muInstance)
-    })
-  }
-
-
-
-  function setId (id) {
-    transports.forEach(function (transport) {
-      transport.setId(muid)
-    })
-  }
-
-
-
-  setId(muid)
-
-  return {
-    tf: tf,
-    setId: setId,
-    setMu: setMu,
-    muid: muid,
-    type: 'transport'
+    return {
+      tf: tf,
+      muid: muid,
+      direction: transports[0].direction,
+      type: 'transport'
+    }
   }
 }
 

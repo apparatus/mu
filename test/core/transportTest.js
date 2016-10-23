@@ -15,7 +15,7 @@
 'use strict'
 
 var test = require('tap').test
-var Mu = require('../../core/core')
+var createMu = require('../../core/core')
 var func = require('../../drivers/func')
 
 
@@ -24,7 +24,7 @@ test('local handler test', function (t) {
 
 
   // service
-  var mus = Mu()
+  var mus = createMu()
   mus.define({role: 'test', cmd: 'one'}, function (args, cb) {
     t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
     cb()
@@ -38,7 +38,7 @@ test('local handler test', function (t) {
 
 
   // consumer
-  var mu = Mu()
+  var mu = createMu()
   mu.outbound('*', func({target: mus}))
 
 
