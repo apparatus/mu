@@ -17,9 +17,7 @@
 var bloomrun = require('bloomrun')
 var assert = require('assert')
 var stringify = require('fast-safe-stringify')
-var _ = require('lodash')
 var errors = require('./err')
-
 
 
 /**
@@ -34,7 +32,7 @@ module.exports = function (logger) {
     assert(tf.type && (tf.type === 'handler' || tf.type === 'transport' || tf.type === 'callback'), 'addRoute requires a known type')
 
     if (pattern) {
-      if (_.isString(pattern) && pattern === '*') {
+      if (typeof pattern === 'string' && pattern === '*') {
         logger.debug('adding default route')
         run.default(tf)
       } else {
