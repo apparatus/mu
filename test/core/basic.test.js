@@ -65,3 +65,27 @@ test('route print test', function (t) {
   t.notEqual(routing.indexOf('{"role":"test","cmd":"two"}'), -1)
 })
 
+test('multi-dispatch same cb', function (t) {
+  t.plan(18)
+
+  var mu = createMu({ logLevel: createMu.log.levelInfo })
+  var count = 0
+  var total = 0
+  mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
+    cb(null, {count: ++count, id: args.pattern.id})
+  })
+
+  function handler (err, result) {
+    t.equal(null, err, 'check err is null')
+    t.equal(result.count, ++total, 'check count is ' + total)
+    t.equal(result.count, result.id, 'check count is ' + result.id)
+  }
+
+  mu.dispatch({role: 'test', cmd: 'one', id: 1}, handler)
+  mu.dispatch({role: 'test', cmd: 'one', id: 2}, handler)
+  mu.dispatch({role: 'test', cmd: 'one', id: 3}, handler)
+  mu.dispatch({role: 'test', cmd: 'one', id: 4}, handler)
+  mu.dispatch({role: 'test', cmd: 'one', id: 5}, handler)
+  mu.dispatch({role: 'test', cmd: 'one', id: 6}, handler)
+})
+

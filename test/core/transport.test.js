@@ -18,7 +18,7 @@ var test = require('tap').test
 var createMu = require('../../core/core')
 var func = require('../../drivers/func')
 
-test('local handler test', function (t) {
+test('local inbound/outbound test', function (t) {
   t.plan(6)
 
   // service
