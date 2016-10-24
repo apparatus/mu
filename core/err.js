@@ -14,7 +14,8 @@
 
 'use strict'
 
-exports.SERVICE_ERR = 1
-exports.FRAMEWORK_ERR = 2
-exports.TRANSPORT_ERR = 3
-
+module.exports = {
+  SERVICE_ERR: 1,
+  FRAMEWORK_ERR: 2,
+  TRANSPORT_ERR: 3
+}

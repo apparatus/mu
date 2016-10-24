@@ -17,14 +17,16 @@
 var test = require('tap').test
 var tcp = require('../../drivers/tcp')
 var mu = require('../../core/core')()
-
+var service1 = require('./system/service1/service')
+var service2 = require('./system/service2/service')
+var service3 = require('./system/service3/service')
 
 function init (cb) {
-  require('./system/service1/service')(function (s1) {
+  service1(function (s1) {
     s1.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))
-    require('./system/service2/service')(function (s2) {
+    service2(function (s2) {
       s2.inbound('*', tcp.server({port: 3002, host: '127.0.0.1'}))
-      require('./system/service3/service')(function (s3) {
+      service3(function (s3) {
         s3.inbound('*', tcp.server({port: 3003, host: '127.0.0.1'}))
         s3.outbound({role: 's1'}, tcp.client({port: 3001, host: '127.0.0.1'}))
         cb(s1, s2, s3)
@@ -32,7 +34,6 @@ function init (cb) {
     })
   })
 }
-
 
 test('consume services with tcp transport test', function (t) {
   t.plan(2)

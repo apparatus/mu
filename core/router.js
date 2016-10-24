@@ -19,7 +19,6 @@ var assert = require('assert')
 var stringify = require('fast-safe-stringify')
 var errors = require('./err')
 
-
 /**
  * pattern router. responsible for the routing table
  */
@@ -27,7 +26,15 @@ module.exports = function (logger) {
   var run = bloomrun({ indexing: 'depth' })
   var idmap = {}
 
-  var addRoute = function addRoute (pattern, tf) {
+  return {
+    addRoute: addRoute,
+    route: route,
+    tearDown: tearDown,
+    print: print,
+    transports: transports
+  }
+
+  function addRoute (pattern, tf) {
     assert(tf, 'addRoute requires a valid handler or transport function')
     assert(tf.type && (tf.type === 'handler' || tf.type === 'transport' || tf.type === 'callback'), 'addRoute requires a known type')
 
@@ -42,22 +49,18 @@ module.exports = function (logger) {
     idmap['' + tf.muid] = tf
   }
 
-
-
   /**
    * main routing function
    */
-  var route = function route (message, cb) {
+  function route (message, cb) {
     assert(message, 'route requries a valid message')
     assert(cb && (typeof cb === 'function'), 'route requries a valid callback handler')
 
     if (message && message.pattern) {
-
       // we are routing an outbound message as there is a pattern attached to the message
       var tf = run.lookup(message.pattern)
 
       if (tf) {
-
         // message will be handled in this process instance. In this case just reflect the error and
         // response parameters back to the callback handler. This will either be local in the case of a single
         // process instance or more likely in transport.js. This will pack the error and response paramters into
@@ -68,7 +71,6 @@ module.exports = function (logger) {
             cb(err || null, response || {})
           })
         } else if (tf.type === 'transport') {
-
           // update the repsponse routing information
           if (!idmap['' + message.protocol.path[message.protocol.path.length - 1]] && message.protocol.inboundIfc) {
             idmap['' + message.protocol.path[message.protocol.path.length - 1]] = idmap['' + message.protocol.inboundIfc]
@@ -87,21 +89,18 @@ module.exports = function (logger) {
           }
         }
       } else {
-
         // unable to find a route, discard message
         logger.error('Routing error no matching route and no defualt route provided, Message will be discarded')
         logger.debug(message, 'discarded message')
         cb({type: errors.TRANSPORT_ERR, message: 'Routing error no matching route and no defualt route provided, Message will be discarded', data: message})
       }
     } else if (message && message.response) {
-
       // we are routing a response message as there is a response block on the message and no pattern block
       assert(message.protocol)
 
       // pull the last muid in the chain
       var muid = message.protocol.path[message.protocol.path.length - 1]
       if (idmap[muid]) {
-
         // we have a matching muid check if the response handler is in this instance of mu, it it is call the callback handler
         // this will be the last step in the distributed call chain. Otherwise the message is being routed through a transport layer
         // so call the tf and invoke the local callback once the message has been sent
@@ -113,13 +112,11 @@ module.exports = function (logger) {
           })
         }
       } else {
-
         // there is no available transport or handler for this mu id, this should never happen, discard the packet...
         logger.error(message, 'routing error no available response transport function for')
         cb('routing error no available response transport function for: ' + stringify(message))
       }
     } else {
-
       // missing both pattern and response fields, this should never happen, discard packet...
       logger.error('malformed packet no pattern or response field. Message will be discarded')
       logger.debug(message, 'malformed message')
@@ -127,9 +124,7 @@ module.exports = function (logger) {
     }
   }
 
-
-
-  var tearDown = function tearDown () {
+  function tearDown () {
     run.list().forEach(function (el) {
       if (el.tearDown) {
         el.tearDown()
@@ -137,9 +132,7 @@ module.exports = function (logger) {
     })
   }
 
-
-
-  var transportList = function transportList () {
+  function transports () {
     var result = []
 
     run.list().forEach(function (el) {
@@ -149,9 +142,7 @@ module.exports = function (logger) {
     return result
   }
 
-
-
-  var print = function print () {
+  function print () {
     var result = ''
 
     result += 'patterns:\n'
@@ -164,15 +155,5 @@ module.exports = function (logger) {
       result += ' : ' + el.payload.muid + ' (' + el.payload.type + ')' + '\n'
     })
     return result
-  }
-
-
-
-  return {
-    addRoute: addRoute,
-    route: route,
-    tearDown: tearDown,
-    print: print,
-    transportList: transportList
   }
 }

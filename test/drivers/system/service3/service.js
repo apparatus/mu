@@ -16,9 +16,7 @@
 
 var mu = require('../../../../core/core')()
 
-
 module.exports = function (cb) {
-
   mu.define({role: 's3', cmd: 'one'}, function (args, cb) {
     mu.dispatch({role: 's1', cmd: 'two'}, function (err, result) {
       cb(err, result)

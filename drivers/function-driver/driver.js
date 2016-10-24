@@ -16,71 +16,48 @@
 
 var register = {}
 
-
 /**
- * local function transport. uses a global function transport registry to connect in process mu instances
+ * local function transport.
+ * uses a singleton transport registry to connect to in
+ * process mu instances
  */
-module.exports = function (options) {
-  var instance
-  var recieveCb
-  var target = null
+module.exports = function createFunctionDriver (options) {
+  return function functionDriver (opts, cb) {
+    var target = options && options.target &&
+      options.target.transports().filter(function (transport) {
+        return (transport.driver &&
+          transport.driver.type === 'func')
+      })
+    target = target && target[target.length - 1].driver
 
+    opts = opts || {}
+    var id = opts.id
 
-
-  function receive (cb) {
-    recieveCb = cb
-  }
-
-
-
-  function send (message, cb) {
-    if (message.protocol.dst === 'target') {
-      target.call(message)
-    } else {
-      register[message.protocol.dst].call(message)
+    register[id] = {
+      type: 'func',
+      send: send,
+      call: call,
+      recieveCb: cb,
+      tearDown: tearDown
     }
-  }
 
+    return register[id]
 
-
-  function tearDown () {
-  }
-
-
-
-  function call (message) {
-    if (message && message.pattern && message.pattern.__err) {
-      recieveCb(message.pattern.__err, message)
-    } else {
-      recieveCb(null, message)
+    function send (message, cb) {
+      var tx = message.protocol.dst === 'target'
+        ? target
+        : register[message.protocol.dst]
+      tx.call(message)
     }
-  }
 
-
-
-  function setId (id) {
-    register[id] = instance
-  }
-
-
-
-  instance = {
-    type: 'func',
-    send: send,
-    receive: receive,
-    tearDown: tearDown,
-    setId: setId,
-    call: call,
-    recieveCb: recieveCb
-  }
-
-  if (options && options.target) {
-    options.target.transportList().forEach(function (transport) {
-      if (transport.driver && transport.driver.type === 'func') {
-        target = register[transport.muid]
+    function call (message) {
+      if (message && message.pattern && message.pattern.__err) {
+        cb(message.pattern.__err, message)
+      } else {
+        cb(null, message)
       }
-    })
-  }
+    }
 
-  return instance
+    function tearDown () {}
+  }
 }

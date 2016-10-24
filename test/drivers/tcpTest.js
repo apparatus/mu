@@ -16,11 +16,11 @@
 
 var test = require('tap').test
 var tcp = require('../../drivers/tcp')
-
-
+var service1 = require('./system/service1/service')
+var createConsumer = require('./system/consumer/consumer')
 
 function init (cb) {
-  require('./system/service1/service')(function (s1) {
+  service1(function (s1) {
     s1.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))
     require('./system/service2/service')(function (s2) {
       s2.inbound('*', tcp.server({port: 3002, host: '127.0.0.1'}))
@@ -29,13 +29,11 @@ function init (cb) {
   })
 }
 
-
-
 test('consume services with tcp transport test', function (t) {
   t.plan(1)
 
   init(function (s1, s2) {
-    var consumer = require('./system/consumer/consumer')()
+    var consumer = createConsumer()
     consumer.mu.outbound({role: 's1'}, tcp.client({port: 3001, host: '127.0.0.1'}))
     consumer.mu.outbound({role: 's2'}, tcp.client({port: 3002, host: '127.0.0.1'}))
     consumer.consume(function (err, result) {

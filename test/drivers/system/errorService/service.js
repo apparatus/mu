@@ -16,9 +16,7 @@
 
 var mu = require('../../../../core/core')()
 
-
 module.exports = function (cb) {
-
   mu.define({role: 'error', cmd: 'error'}, function (args, cb) {
     cb('oh fek', null)
   })

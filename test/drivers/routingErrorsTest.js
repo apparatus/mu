@@ -15,23 +15,22 @@
 'use strict'
 
 var test = require('tap').test
-var Mu = require('../../core/core')
+var createMu = require('../../core/core')
 var tcp = require('../../drivers/tcp')
 
-var s1 = Mu()
+var s1 = createMu()
 
-var h1 = function (args, cb) {
+function h1 (args, cb) {
   cb()
 }
 
 s1.define({role: 's1', cmd: 'one'}, h1)
 s1.inbound({role: 's1'}, tcp.server({port: 3001, host: '127.0.0.1'}))
 
-
 test('test no service', function (t) {
   t.plan(2)
 
-  var mu = Mu()
+  var mu = createMu()
   mu.outbound({role: 's1'}, tcp.client({port: 3001, host: '127.0.0.1'}))
   mu.dispatch({role: 's1', cmd: 'one'}, function (err, result) {
     t.equal(err, null)

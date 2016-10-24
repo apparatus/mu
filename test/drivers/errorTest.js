@@ -17,16 +17,14 @@
 var test = require('tap').test
 var mu = require('../../core/core')()
 var tcp = require('../../drivers/tcp')
-
-
+var errorService = require('./system/errorService/service')
 
 function init (cb) {
-  require('./system/errorService/service')(function (errSvc) {
+  errorService(function (errSvc) {
     errSvc.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))
     cb(errSvc)
   })
 }
-
 
 test('test no service', function (t) {
   mu.outbound('*', tcp.client({port: 3001, host: '127.0.0.1'}))
@@ -37,9 +35,7 @@ test('test no service', function (t) {
   })
 })
 
-
 test('test match nothing', function (t) {
-
   init(function (errSvc) {
     mu.outbound('*', tcp.client({port: 3001, host: '127.0.0.1'}))
     mu.dispatch({role: 'wibble', cmd: 'fish'}, function (err, result) {
@@ -50,7 +46,6 @@ test('test match nothing', function (t) {
     })
   })
 })
-
 
 test('test match partial', function (t) {
   init(function (errSvc) {
@@ -63,7 +58,6 @@ test('test match partial', function (t) {
     })
   })
 })
-
 
 test('service returning inbound error', function (t) {
   init(function (errSvc) {
