@@ -16,6 +16,7 @@
 
 var net = require('net')
 var EventEmitter = require('events')
+var stringify = require('fast-safe-stringify')
 var SIGNATURE = 4242
 
 /**
@@ -48,7 +49,7 @@ module.exports = function createTcpDriver (options) {
     }
 
     function encode (message) {
-      var payload = JSON.stringify(message)
+      var payload = stringify(message)
       var buf = new Buffer(Buffer.byteLength(payload) + 4)
 
       buf.writeInt16BE(SIGNATURE, 0)

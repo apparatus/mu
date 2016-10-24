@@ -16,6 +16,7 @@
 
 var bloomrun = require('bloomrun')
 var assert = require('assert')
+var stringify = require('fast-safe-stringify')
 var errors = require('./err')
 
 /**
@@ -113,7 +114,7 @@ module.exports = function (logger) {
       } else {
         // there is no available transport or handler for this mu id, this should never happen, discard the packet...
         logger.error(message, 'routing error no available response transport function for')
-        cb('routing error no available response transport function for: ' + JSON.stringify(message))
+        cb('routing error no available response transport function for: ' + stringify(message))
       }
     } else {
       // missing both pattern and response fields, this should never happen, discard packet...
@@ -149,7 +150,7 @@ module.exports = function (logger) {
       if (el.default) {
         result += '*'
       } else {
-        result += JSON.stringify(el.pattern)
+        result += stringify(el.pattern)
       }
       result += ' : ' + el.payload.muid + ' (' + el.payload.type + ')' + '\n'
     })
