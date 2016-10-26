@@ -16,7 +16,6 @@
 
 var assert = require('assert')
 var uuid = require('uuid')
-var crypto = require('crypto')
 var pino = require('pino')
 var errors = require('./err')
 var createRouter = require('./router')
@@ -64,22 +63,19 @@ function createMu (options) {
   }
 
   function dispatch (message, cb) {
-    var hash
-    var digest
+    var id = uuid()
 
     assert(message, 'dispatch requires a valid message')
-    assert(cb && (typeof cb === 'function'), 'dispatch requries a valid callback handler')
+    assert(typeof cb === 'function', 'dispatch requries a valid callback handler')
     logger.debug('dispatching message: ' + message)
 
     if (!(message.pattern || message.response)) {
-      hash = crypto.createHash('sha256')
-      hash.update('' + cb)
-      digest = hash.digest('hex')
-      router.addRoute(null, {muid: digest, tf: cb, type: 'callback'})
-      router.route({pattern: message, protocol: {path: [digest], trace: [digest], ttl: DEFAULT_TTL}}, cb)
-    } else {
-      router.route(message, cb)
+      router.addRoute(null, {muid: id, tf: cb, type: 'callback'})
+      router.route({pattern: message, protocol: {path: [id], trace: [id], ttl: DEFAULT_TTL}}, cb)
+      return
     }
+
+    router.route(message, cb)
   }
 }
 
