@@ -17,16 +17,23 @@
 var assert = require('assert')
 var uuid = require('uuid')
 var pino = require('pino')
-var errors = require('./err')
+var muError = require('mu-error')
 var createRouter = require('./router')
 var DEFAULT_TTL = 10
 
-function createMu (options) {
-  var logger = (options && options.logger) || pino()
-  var router = createRouter(logger)
+function createMu (opts) {
+  opts = opts || {}
+  // see mu-error for error options
+  opts.errors = opts.errors || {}
+  var logger = opts.logger || pino()
+  var dev = opts.dev
+  var mue = muError(Object.assign({
+    dev: dev
+  }, opts.errors))
+  var router = createRouter({logger: logger, mue: mue})
 
-  if (options && options.logLevel) {
-    logger.level = options.logLevel
+  if (opts.logLevel) {
+    logger.level = opts.logLevel
   }
 
   var instance = {
@@ -37,6 +44,8 @@ function createMu (options) {
     tearDown: router.tearDown,
     print: router.print,
     log: logger,
+    error: mue,
+    DEV_MODE: dev,
     transports: router.transports
   }
 
@@ -83,11 +92,5 @@ createMu.log = Object.keys(pino.levels.values).reduce((acc, key) => {
   acc['level' + key[0].toUpperCase() + key.slice(1)] = key
   return acc
 }, {})
-
-createMu.errors = {
-  SERVICE_ERR: errors.SERVICE_ERR,
-  FRAMEWORK_ERR: errors.FRAMEWORK_ERR,
-  TRANSPORT_ERR: errors.TRANSPORT_ERR
-}
 
 module.exports = createMu

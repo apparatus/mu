@@ -17,6 +17,7 @@
 var net = require('net')
 var EventEmitter = require('events')
 var stringify = require('fast-safe-stringify')
+var mue = require('mu-error')()
 var SIGNATURE = 4242
 
 /**
@@ -84,7 +85,7 @@ module.exports = function createTcpDriver (options) {
 
         connections[message.protocol.dst].on('error', function (err) {
           connections[message.protocol.dst] = null
-          cb(err || null, null)
+          cb(mue.wrap(err || null))
         })
       }
       connections[message.protocol.dst].write(encode(message))

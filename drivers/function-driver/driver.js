@@ -13,7 +13,7 @@
  */
 
 'use strict'
-
+var mue = require('mu-error')({dev: process.NODE_ENV !== 'production'})
 var register = {}
 
 /**
@@ -52,7 +52,7 @@ module.exports = function createFunctionDriver (options) {
 
     function call (message) {
       if (message && message.pattern && message.pattern.__err) {
-        cb(message.pattern.__err, message)
+        cb(mue(message.pattern.__err), message)
       } else {
         cb(null, message)
       }

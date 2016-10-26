@@ -33,6 +33,7 @@
     "bloomrun": "^2.3.0",
     "fast-safe-stringify": "^1.1.1",
     "lodash.clonedeep": "^4.5.0",
+    "mu-error": "^1.2.0",
     "pino": "^2.12.3",
     "uuid": "^2.0.2"
   },
