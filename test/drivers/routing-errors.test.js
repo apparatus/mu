@@ -35,7 +35,7 @@ test('test no service', function (t) {
   mu.dispatch({role: 's1', cmd: 'one'}, function (err, result) {
     t.equal(err, null)
     mu.dispatch({wibble: 'fish'}, function (err, result) {
-      t.equal(err.message, 'Routing error no matching route and no defualt route provided, Message will be discarded')
+      t.equal(err.message, 'Routing error no matching route and no default route provided, Message will be discarded')
       s1.tearDown()
       mu.tearDown()
     })

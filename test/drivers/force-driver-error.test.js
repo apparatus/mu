@@ -18,7 +18,7 @@ var test = require('tap').test
 var createMu = require('../../core/core')
 var func = require('../../drivers/func')
 
-test('force an error with function trasport test for coverage numbers', function (t) {
+test('force an error with function transport test for coverage numbers', function (t) {
   t.plan(1)
 
   var mu1 = createMu()

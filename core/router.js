@@ -17,12 +17,13 @@
 var bloomrun = require('bloomrun')
 var assert = require('assert')
 var stringify = require('fast-safe-stringify')
-var errors = require('./err')
 
 /**
  * pattern router. responsible for the routing table
  */
-module.exports = function (logger) {
+module.exports = function (opts) {
+  var logger = opts.logger
+  var mue = opts.mue
   var run = bloomrun({ indexing: 'depth' })
   var idmap = {}
 
@@ -68,7 +69,7 @@ module.exports = function (logger) {
         if (tf.type === 'handler') {
           logger.debug(message, 'handling message')
           tf.tf(message, function (err, response) {
-            cb(err || null, response || {})
+            cb(mue.wrap(err || null), response || {})
           })
         } else if (tf.type === 'transport') {
           // update the repsponse routing information
@@ -81,18 +82,20 @@ module.exports = function (logger) {
           // be logged and an exception thrown. This will result in this node crashing and restarting - this is by design
           if (tf.direction === 'outbound') {
             tf.tf(message, function (err) {
-              if (err) { return cb(err) }
+              if (err) {
+                return cb(mue.wrap(err))
+              }
             })
           } else {
             logger.error('Routing error: no valid outbound route or handler available. Message will be discarded')
-            cb({type: errors.TRANSPORT_ERR, message: 'Routing error: no valid outbound route available. Message will be discarded'})
+            cb(mue.transport('Routing error: no valid outbound route available. Message will be discarded'))
           }
         }
       } else {
         // unable to find a route, discard message
-        logger.error('Routing error no matching route and no defualt route provided, Message will be discarded')
+        logger.error('Routing error no matching route and no default route provided, Message will be discarded')
         logger.debug(message, 'discarded message')
-        cb({type: errors.TRANSPORT_ERR, message: 'Routing error no matching route and no defualt route provided, Message will be discarded', data: message})
+        cb(mue.transport('Routing error no matching route and no default route provided, Message will be discarded', message))
       }
     } else if (message && message.response) {
       // we are routing a response message as there is a response block on the message and no pattern block
@@ -105,22 +108,22 @@ module.exports = function (logger) {
         // this will be the last step in the distributed call chain. Otherwise the message is being routed through a transport layer
         // so call the tf and invoke the local callback once the message has been sent
         if (idmap[muid].type === 'callback') {
-          idmap[muid].tf(message.response.err || null, message.response)
+          idmap[muid].tf(mue.remote(message.response.err || null), message.response)
         } else {
           idmap[muid].tf(message, function (err, response) {
-            cb(err, response)
+            cb(mue.wrap(err), response)
           })
         }
       } else {
         // there is no available transport or handler for this mu id, this should never happen, discard the packet...
         logger.error(message, 'routing error no available response transport function for')
-        cb('routing error no available response transport function for: ' + stringify(message))
+        cb(mue.framework('routing error no available response transport function', message))
       }
     } else {
       // missing both pattern and response fields, this should never happen, discard packet...
       logger.error('malformed packet no pattern or response field. Message will be discarded')
       logger.debug(message, 'malformed message')
-      cb({type: errors.TRANSPORT_ERR, message: 'Malformed packet no pattern or response field. Message will be discarded', data: message})
+      cb(mue.transport('Malformed packet no pattern or response field. Message will be discarded', message))
     }
   }
 
