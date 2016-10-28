@@ -13,7 +13,6 @@
  */
 
 'use strict'
-var mue = require('mu-error')({dev: process.NODE_ENV !== 'production'})
 var register = {}
 
 /**
@@ -37,13 +36,12 @@ module.exports = function createFunctionDriver (options) {
       type: 'func',
       send: send,
       call: call,
-      recieveCb: cb,
       tearDown: tearDown
     }
 
     return register[id]
 
-    function send (message, cb) {
+    function send (message) {
       var tx = message.protocol.dst === 'target'
         ? target
         : register[message.protocol.dst]
@@ -51,11 +49,7 @@ module.exports = function createFunctionDriver (options) {
     }
 
     function call (message) {
-      if (message && message.pattern && message.pattern.__err) {
-        cb(mue(message.pattern.__err), message)
-      } else {
-        cb(null, message)
-      }
+      cb(null, message)
     }
 
     function tearDown () {}
