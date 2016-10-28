@@ -81,7 +81,7 @@ module.exports = function (options) {
 
       connections[message.protocol.dst].on('error', function (err) {
         connections[message.protocol.dst] = null
-        cb(err || null, null)
+        if (cb) { cb(err || null, null) }
       })
     }
     connections[message.protocol.dst].write(encode(message))

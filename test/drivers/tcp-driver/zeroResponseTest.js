@@ -15,15 +15,15 @@
 'use strict'
 
 var test = require('tap').test
-var tcp = require('../../drivers/tcp')
-var rcc = require('./system/consumer/responseCountConsumer')()
+var tcp = require('../../../drivers/tcp')
+var rcc = require('../../system/consumer/responseCountConsumer')()
 
 
 
 function initTcp (cb) {
-  require('./system/zeroResponseService/service')(function (zero) {
+  require('../../system/zeroResponseService/service')(function (zero) {
     zero.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))
-    require('./system/multiResponseService/service')(function (multi) {
+    require('../../system/multiResponseService/service')(function (multi) {
       multi.inbound('*', tcp.server({port: 3002, host: '127.0.0.1'}))
       cb(zero, multi)
     })

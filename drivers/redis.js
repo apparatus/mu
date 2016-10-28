@@ -5,7 +5,7 @@
  * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
  * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * SERVICES LOSS OF USE, DATA, OR PROFITS OR BUSINESS INTERRUPTION)
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
@@ -14,19 +14,9 @@
 
 'use strict'
 
-var mu = require('../../../../core/core')()
+var redisDriver = require('./redis-driver/driver')
+var transport = require('../core/transport')
 
-
-module.exports = function (cb) {
-
-  mu.define({role: 'error', cmd: 'error'}, function (args, cb) {
-    cb('oh fek', null)
-  })
-
-  mu.define({role: 'error', cmd: 'crash'}, function (args, cb) {
-    process.exit(1)
-  })
-
-  cb(mu)
-}
+module.exports.server = function server (options) { return transport(redisDriver({source: options})) }
+module.exports.client = function client (options) { return transport(redisDriver({target: options})) }
 

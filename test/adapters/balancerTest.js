@@ -15,36 +15,37 @@
 'use strict'
 
 var test = require('tap').test
+var mu = require('../../core/core')()
 var tcp = require('../../drivers/tcp')
-var Mu = require('../../core/core')
-
+var balance = require('../../adapters/balance')
+var service = require('../system/service1/service')
 
 
 function init (cb) {
-
-  require('./system/service1/service')(function (s1) {
+  service(function (s1) {
     s1.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))
-    var router = Mu()
-    router.inbound('*', tcp.server({port: 3003, host: '127.0.0.1'}))
-    router.outbound({role: 's1'}, tcp.client({port: 3001, host: '127.0.0.1'}))
-    cb(s1, router)
+    service(function (s2) {
+      s2.inbound('*', tcp.server({port: 3002, host: '127.0.0.1'}))
+      cb(s1, s2)
+    })
   })
 }
 
-// TODO: also add test {role: 's2'} should fail no outbound route
 
-test('consume services with tcp transport test', function (t) {
+test('consume services with tcp balancer adapter', function (t) {
   t.plan(2)
 
-  init(function (s1, router) {
-    var client = Mu()
-    client.outbound({role: 's1'}, tcp.client({port: 3003, host: '127.0.0.1'}))
-    client.dispatch({role: 's1', cmd: 'two'}, function (err, result) {
+  init(function (s1, s2) {
+    mu.outbound({role: 's1'}, balance([tcp.client({port: 3001, host: '127.0.0.1'}),
+                                       tcp.client({port: 3002, host: '127.0.0.1'})]))
+    mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
       t.equal(null, err)
-      t.deepEqual({my: 'response'}, result)
-      client.tearDown()
-      s1.tearDown()
-      router.tearDown()
+      mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
+        t.equal(null, err)
+        mu.tearDown()
+        s1.tearDown()
+        s2.tearDown()
+      })
     })
   })
 })

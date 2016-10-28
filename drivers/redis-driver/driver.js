@@ -15,20 +15,25 @@
 'use strict'
 
 var EventEmitter = require('events')
-var redis = require('redis')
 
 
 /**
  * options
  * {
- *   source { host, port, queue}
- *   target { host, port. queue}
+ *   { host, port, list, redis - provide test redis client instance }
  * }
+ * list should be service name, the driver will use two lists
+ * <list>_req
+ * <list>_res
+ * servers (services)  will listen on _req and send on _res
+ * clients (service invokers) will send on _req and listen on _res
  */
 module.exports = function (options) {
   var emitter = new EventEmitter()
-  var targetQueue = null
-  var sourceQueue = null
+  var tearingDown = false
+  var redis
+  var rin = null
+  var rout = null
 
 
 
@@ -38,56 +43,77 @@ module.exports = function (options) {
 
 
 
-  if (options.target) {
-    targetQueue = redis.createClient(options.target.port, options.target.host)
-    targetQueue.on('ready', function () {
-      targetQueue.on('error', function (err) {
-        emitter.emit('receive', err, null)
-      })
-    })
-  }
-
-
-
   function listen (cb) {
-    if (!sourceQueue) {
-      sourceQueue = redis.createClient(options.source.port, options.source.host)
-      sourceQueue.on('ready', function () {
-        sourceQueue.on('error', function (err) {
-          emitter.emit('receive', err, null)
-        })
-      })
+    var listName
+
+    if (options.source) {
+      listName = options.source.list + '_req'
+    }
+    if (options.target) {
+      listName = options.target.list + '_res'
     }
 
-    sourceQueue.on('message', function (channel, str) {
-      var message = JSON.parse(str)
-      emitter.on('receive', null, message)
-    })
-
-    sourceQueue.subscribe(options.source.queue)
+    var brpopQueue = function () {
+      rin.brpop(listName, 1, function (err, data) {
+        if (cb && err) {
+          return cb(err)
+        } else if (data) {
+          var message = JSON.parse(data[1])
+          emitter.emit('receive', null, message)
+        }
+        if (!tearingDown) {
+          brpopQueue()
+        }
+      })
+    }
+    brpopQueue()
   }
 
 
 
   function send (message, cb) {
-    if (targetQueue) {
-      targetQueue.publish(options.target.queue, message)
+    if (options.source) {
+      rout.lpush(options.source.list + '_res', JSON.stringify(message), function (err) {
+        if (cb && err) { cb(err) }
+      })
     }
-    if (sourceQueue) {
-      sourceQueue.publish(options.target.queue, message)
+    if (options.target) {
+      rout.lpush(options.target.list + '_req', JSON.stringify(message), function (err) {
+        if (cb && err) { cb(err) }
+      })
     }
   }
 
 
 
   function tearDown () {
+    tearingDown = true
+    rin.quit()
+    rout.quit()
   }
 
 
 
-  if (options.source && options.source.host && options.source.port) {
-    listen()
+  if (options.source && options.source.redis) {
+    redis = options.source.redis
+  } else if (options.target && options.target.redis) {
+    redis = options.target.redis
+  } else {
+    redis = require('redis')
   }
+
+  if (options.target) {
+    rin = redis.createClient(options.target.port, options.target.host)
+    rout = redis.createClient(options.target.port, options.target.host)
+  }
+  if (options.source) {
+    rin = redis.createClient(options.source.port, options.source.host)
+    rout = redis.createClient(options.source.port, options.source.host)
+  }
+
+
+
+  listen()
 
   return {
     type: 'redis',

@@ -15,18 +15,33 @@
 'use strict'
 
 
-var mu = require('../../../../core/core')()
+var mu = require('../../../core/core')()
 
-module.exports = function (cb) {
+module.exports = function () {
 
-  mu.define({role: 's2', cmd: 'one'}, function (args, cb) {
-    cb()
-  })
+  function consumeZero (cb) {
+    mu.dispatch({role: 'zero', cmd: 'one'}, function () {
+      cb(false)
+    })
+    setTimeout(function () {
+      cb(true)
+    }, 1000)
+  }
 
-  mu.define({role: 's2', cmd: 'two'}, function (args, cb) {
-    cb(null, {my: 'response'})
-  })
+  function consumeMulti (cb) {
+    var count = 0
+    mu.dispatch({role: 'multi', cmd: 'one'}, function () {
+      count = count + 1
+      if (count === 2) {
+        cb(count)
+      }
+    })
+  }
 
-  cb(mu)
+  return {
+    mu: mu,
+    consumeZero: consumeZero,
+    consumeMulti: consumeMulti
+  }
 }
 

@@ -14,10 +14,17 @@
 
 'use strict'
 
-var tcp = require('../../../../drivers/tcp')
+module.exports = function (cb) {
+  var mu = require('../../../core/core')()
 
+  mu.define({role: 's1', cmd: 'one'}, function (args, cb) {
+    cb()
+  })
 
-require('./service')(function (errSvc) {
-  errSvc.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))
-})
+  mu.define({role: 's1', cmd: 'two'}, function (args, cb) {
+    cb(null, {my: 'response'})
+  })
+
+  cb(mu)
+}
 

@@ -14,17 +14,23 @@
 
 'use strict'
 
-module.exports = function (cb) {
-  var mu = require('../../../../core/core')()
+var mu = require('../../../core/core')()
 
-  mu.define({role: 's1', cmd: 'one'}, function (args, cb) {
-    cb()
-  })
+module.exports = function () {
 
-  mu.define({role: 's1', cmd: 'two'}, function (args, cb) {
-    cb(null, {my: 'response'})
-  })
+  function consume (cb) {
+    mu.dispatch({role: 's2', cmd: 'one', fish: 'cheese'}, function (err, result) {
+      if (err) { console.log(err) }
+      mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
+        if (err) { console.log(err) }
+        cb(err, result)
+      })
+    })
+  }
 
-  cb(mu)
+  return {
+    mu: mu,
+    consume: consume
+  }
 }
 

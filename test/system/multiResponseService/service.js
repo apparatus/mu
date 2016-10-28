@@ -14,8 +14,8 @@
 
 'use strict'
 
+var mu = require('../../../core/core')()
 
-var mu = require('../../../../core/core')()
 
 module.exports = function (cb) {
 

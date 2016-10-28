@@ -15,13 +15,13 @@
 'use strict'
 
 var test = require('tap').test
-var mu = require('../../core/core')()
-var tcp = require('../../drivers/tcp')
+var mu = require('../../../core/core')()
+var tcp = require('../../../drivers/tcp')
 
 
 
 function init (cb) {
-  require('./system/errorService/service')(function (errSvc) {
+  require('../../system/errorService/service')(function (errSvc) {
     errSvc.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))
     cb(errSvc)
   })
