@@ -17,60 +17,72 @@
 var test = require('tap').test
 var mu = require('../../../core/core')()
 var tcp = require('../../../drivers/tcp')
-
-
+var errorService = require('../../system/errorService/service')
 
 function init (cb) {
-  require('../../system/errorService/service')(function (errSvc) {
+  errorService(function (errSvc) {
     errSvc.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))
     cb(errSvc)
   })
 }
 
-
 test('test no service', function (t) {
   mu.outbound('*', tcp.client({port: 3001, host: '127.0.0.1'}))
   mu.dispatch({role: 'wibble', cmd: 'fish'}, function (err, result) {
     mu.tearDown()
-    t.equal(err.code, 'ECONNREFUSED', 'check connection refused')
+    t.ok(err instanceof Error)
+    t.is(err.isBoom, true)
+    t.is(err.isMu, true)
+    t.is(err.code, 'ECONNREFUSED', 'check connection refused')
     t.end()
   })
 })
 
-
 test('test match nothing', function (t) {
-
   init(function (errSvc) {
     mu.outbound('*', tcp.client({port: 3001, host: '127.0.0.1'}))
     mu.dispatch({role: 'wibble', cmd: 'fish'}, function (err, result) {
       mu.tearDown()
-      t.deepEqual(err, { message: 'Routing error: no valid outbound route available. Message will be discarded', type: 3 })
+      t.ok(err instanceof Error)
+      t.is(err.isBoom, true)
+      t.is(err.isMu, true)
+      err = mu.error.extract(err)
+      t.is(err.code, mu.error.ERRORS.TRANSPORT)
+      t.is(err.message, 'Routing error: no valid outbound route available. Message will be discarded')
       errSvc.tearDown()
       t.end()
     })
   })
 })
-
 
 test('test match partial', function (t) {
   init(function (errSvc) {
     mu.outbound('*', tcp.client({port: 3001, host: '127.0.0.1'}))
     mu.dispatch({role: 'error', cmd: 'fish'}, function (err, result) {
       mu.tearDown()
-      t.deepEqual(err, { message: 'Routing error: no valid outbound route available. Message will be discarded', type: 3 })
+      t.ok(err instanceof Error)
+      t.is(err.isBoom, true)
+      t.is(err.isMu, true)
+      err = mu.error.extract(err)
+      t.is(err.code, mu.error.ERRORS.TRANSPORT)
+      t.is(err.message, 'Routing error: no valid outbound route available. Message will be discarded')
       errSvc.tearDown()
       t.end()
     })
   })
 })
 
-
 test('service returning inbound error', function (t) {
   init(function (errSvc) {
     mu.outbound('*', tcp.client({port: 3001, host: '127.0.0.1'}))
     mu.dispatch({role: 'error', cmd: 'error'}, function (err, result) {
       mu.tearDown()
-      t.equal(err, 'oh fek', 'check error response')
+      t.ok(err instanceof Error)
+      t.is(err.isBoom, true)
+      t.is(err.isMu, true)
+      err = mu.error.extract(err)
+      t.is(err.code, mu.error.ERRORS.SERVICE)
+      t.is(err.message, 'oh fek', 'check error response')
       errSvc.tearDown()
       t.end()
     })

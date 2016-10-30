@@ -17,7 +17,6 @@
 var mu = require('../../../core/core')()
 
 module.exports = function () {
-
   function consume (cb) {
     mu.dispatch({role: 's2', cmd: 'one', fish: 'cheese'}, function (err, result) {
       if (err) { console.log(err) }

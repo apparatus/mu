@@ -17,5 +17,9 @@
 var funcDriver = require('./function-driver/driver')
 var transport = require('../core/transport')
 
-module.exports = function (options) { return transport(funcDriver(options)) }
+module.exports = function (options) {
+  return function driver (mu, opts) {
+    return transport(funcDriver(options), mu, opts)
+  }
+}
 

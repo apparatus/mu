@@ -16,26 +16,25 @@
 
 var test = require('tap').test
 var func = require('../../../drivers/func')
-
-
+var service1 = require('../../system/service1/service')
+var service2 = require('../../system/service2/service')
+var createConsumer = require('../../system/consumer/consumer')
 
 function init (cb) {
-  require('../../system/service1/service')(function (s1) {
+  service1(function (s1) {
     s1.inbound('*', func())
-    require('../../system/service2/service')(function (s2) {
+    service2(function (s2) {
       s2.inbound('*', func())
       cb(s1, s2)
     })
   })
 }
 
-
-
 test('consume services with function transport test', function (t) {
   t.plan(2)
 
   init(function (s1, s2) {
-    var consumer = require('../../system/consumer/consumer')()
+    var consumer = createConsumer()
     consumer.mu.outbound({role: 's1'}, func({target: s1}))
     consumer.mu.outbound({role: 's2'}, func({target: s2}))
 

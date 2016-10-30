@@ -16,20 +16,40 @@
 
 var assert = require('assert')
 var uuid = require('uuid')
-var crypto = require('crypto')
-var defaultLogger = require('./log')
-var errors = require('./err')
+var pino = require('pino')
+var muError = require('mu-error')
+var createRouter = require('./router')
 var DEFAULT_TTL = 10
 
+function createMu (opts) {
+  opts = opts || {}
+  // see mu-error for error options
+  opts.errors = opts.errors || {}
+  var logger = opts.logger || pino()
+  var dev = opts.dev
+  var mue = muError(Object.assign({
+    dev: dev
+  }, opts.errors))
+  var router = createRouter({logger: logger, mue: mue})
 
-module.exports = function (options) {
-  var logger = (options && options.logger) || defaultLogger.create(defaultLogger.levelInfo)
-  var router = require('./router')(logger)
-
-  if (options && options.logLevel) {
-    logger.setLevel(options.logLevel)
+  if (opts.logLevel) {
+    logger.level = opts.logLevel
   }
 
+  var instance = {
+    inbound: inbound,
+    outbound: outbound,
+    define: define,
+    dispatch: dispatch,
+    tearDown: router.tearDown,
+    print: router.print,
+    log: logger,
+    error: mue,
+    DEV_MODE: dev,
+    transports: router.transports
+  }
+
+  return instance
 
   function define (pattern, tf) {
     assert(pattern, 'define requires a valid pattern')
@@ -43,81 +63,34 @@ module.exports = function (options) {
     }
   }
 
-
-
   function inbound (pattern, tf) {
-    tf.setMu(instance)
-    tf.direction = 'inbound'
-    define(pattern, tf)
+    define(pattern, tf(instance, {direction: 'inbound'}))
   }
-
-
 
   function outbound (pattern, tf) {
-    tf.setMu(instance)
-    tf.direction = 'outbound'
-    define(pattern, tf)
+    define(pattern, tf(instance, {direction: 'outbound'}))
   }
 
-
-
   function dispatch (message, cb) {
-    var hash
-    var digest
+    var id = uuid()
 
     assert(message, 'dispatch requires a valid message')
-    assert(cb && (typeof cb === 'function'), 'dispatch requries a valid callback handler')
+    assert(typeof cb === 'function', 'dispatch requries a valid callback handler')
     logger.debug('dispatching message: ' + message)
 
     if (!(message.pattern || message.response)) {
-      hash = crypto.createHash('sha256')
-      hash.update('' + cb)
-      digest = hash.digest('hex')
-      router.addRoute(null, {muid: digest, tf: cb, type: 'callback'})
-      router.route({pattern: message, protocol: {path: [digest], trace: [digest], ttl: DEFAULT_TTL}}, cb)
-    } else {
-      router.route(message, cb)
+      router.addRoute(null, {muid: id, tf: cb, type: 'callback'})
+      router.route({pattern: message, protocol: {path: [id], trace: [id], ttl: DEFAULT_TTL}}, cb)
+      return
     }
+
+    router.route(message, cb)
   }
-
-
-
-  function tearDown () {
-    router.tearDown()
-  }
-
-
-
-  function print () {
-    return router.print()
-  }
-
-
-
-  var instance = {
-    inbound: inbound,
-    outbound: outbound,
-    define: define,
-    dispatch: dispatch,
-    tearDown: tearDown,
-
-    transports: {},
-    print: print,
-    log: logger,
-    transportList: function () { return router.transportList() }
-  }
-
-  return instance
 }
 
+createMu.log = Object.keys(pino.levels.values).reduce((acc, key) => {
+  acc['level' + key[0].toUpperCase() + key.slice(1)] = key
+  return acc
+}, {})
 
-module.exports.log = {levelTrace: defaultLogger.levelTrace,
-                      levelDebug: defaultLogger.levelDebug,
-                      levelInfo: defaultLogger.levelInfo,
-                      levelWarn: defaultLogger.levelWarn,
-                      levelError: defaultLogger.levelError,
-                      levelFatal: defaultLogger.levelFatal}
-
-module.exports.errors = {SERVICE_ERR: errors.SERVICE_ERR,
-                         FRAMEWORK_ERR: errors.FRAMEWORK_ERR,
-                         TRANSPORT_ERR: errors.TRANSPORT_ERR}
+module.exports = createMu

@@ -16,58 +16,68 @@
 
 var assert = require('assert')
 var uuid = require('uuid')
-var _ = require('lodash')
-
-
+var cloneDeep = require('lodash.clonedeep')
 
 /**
  * responsible for the protocol implementation
  *  {pattern: { pattern and data }, proto: { path: [1234, 4567], trace: [1234, 4567], ttl: 9}}
  *  {response: { response data }, proto: { path: [1234], dst: 4567, trace: [1234, 4567, 6789], ttl: 8}}
  */
-module.exports = function (driver) {
-  var muid = uuid()
-  var mu
+module.exports = function (createDriver, mu, opts) {
+  opts = opts || {}
+  var direction = opts.direction
+  var muid = opts.id || uuid()
+  var logger = mu.log.child({muid: muid})
+  var driver = createDriver({id: muid}, recieve)
 
-  driver.setId(muid)
-  driver.receive(function (err, msg) {
-    mu.log.debug('node: ' + muid + ' <- ' + JSON.stringify(msg))
+  return {
+    muid: muid,
+    tf: tf,
+    direction: direction,
+    type: 'transport',
+    driver: driver,
+    tearDown: driver.tearDown
+  }
+
+  function recieve (err, msg) {
+    logger.debug({in: msg}, 'message received')
     msg.protocol.inboundIfc = muid
 
     if (err) {
-
-      // recieved an error condition from the driver, typically this signals a failed client connection or other
-      // inbound connection error condition. In this case, log the error but make no attempt at further routing
-      mu.log.error('node: ' + muid + ' ERROR: ', err)
-    } else {
-      mu.dispatch(msg, function (err, response) {
-        var packet
-
-        var message = _.cloneDeep(msg)
-        if (!response) {
-          response = {}
-        }
-        if (err) {
-          response.err = err
-        }
-        packet = {response: _.cloneDeep(response), protocol: message.protocol}
-        packet.protocol.trace.push(muid)
-        packet.protocol.src = muid
-        packet.protocol.dst = packet.protocol.path.pop()
-        mu.log.debug('node: ' + muid + ' -> ' + JSON.stringify(packet))
-        driver.send(packet)
-      })
+      // received an error condition from the driver,
+      // typically this signals a failed client connection
+      // or other inbound connection error condition.
+      // In this case, log the error but make no attempt at
+      // further routing
+      logger.error(err)
+      return
     }
-  })
-
-
+    mu.dispatch(msg, function (err, response) {
+      var packet
+      var message = cloneDeep(msg)
+      response = response || {}
+      if (err) { response.err = err }
+      packet = {
+        response: cloneDeep(response),
+        protocol: message.protocol
+      }
+      packet.protocol.trace.push(muid)
+      packet.protocol.src = muid
+      packet.protocol.dst = packet.protocol.path.pop()
+      logger.debug({out: packet}, 'sending response')
+      driver.send(packet, function (err) {
+        if (err) { logger.error(err) }
+      })
+    })
+  }
 
   function tf (msg, cb) {
     assert(msg)
     assert(msg.protocol)
-    assert(cb && (typeof cb === 'function'), 'transport requries a valid callback handler')
+    assert(cb && (typeof cb === 'function'),
+      'transport requires a valid callback handler')
 
-    var message = _.cloneDeep(msg)
+    var message = cloneDeep(msg)
 
     if (message.pattern) {
       message.protocol.path.push(muid)
@@ -82,39 +92,7 @@ module.exports = function (driver) {
     message.protocol.src = muid
     message.protocol.trace.push(muid)
 
-    mu.log.debug('node: ' + muid + ' -> ' + JSON.stringify(message))
-    driver.send(message, function (err) {
-      if (err) { return cb(err) }
-    })
-  }
-
-
-
-  function setMu (muInstance) {
-    mu = muInstance
-  }
-
-
-
-  function setId (id) {
-    muid = id
-  }
-
-
-
-  function tearDown () {
-    driver.tearDown()
-  }
-
-
-
-  return {
-    muid: muid,
-    setMu: setMu,
-    tf: tf,
-    type: 'transport',
-    setId: setId,
-    driver: driver,
-    tearDown: tearDown
+    logger.debug({out: message}, 'sending via transport driver')
+    driver.send(message, cb)
   }
 }

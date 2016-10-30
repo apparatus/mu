@@ -15,56 +15,38 @@
 'use strict'
 
 var test = require('tap').test
-var Mu = require('../../core/core')
+var createMu = require('../../core/core')
 var func = require('../../drivers/func')
 
-
-test('local handler test', function (t) {
+test('local inbound/outbound test', function (t) {
   t.plan(6)
 
-  var mu = Mu({logLevel: Mu.log.levelInfo})
-
-  mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
+  // service
+  var mus = createMu()
+  mus.define({role: 'test', cmd: 'one'}, function (args, cb) {
     t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
     cb()
   })
 
-  mu.define({role: 'test', cmd: 'two'}, function (args, cb) {
+  mus.define({role: 'test', cmd: 'two'}, function (args, cb) {
     t.deepEqual(args.pattern, { role: 'test', cmd: 'two', fish: 'cheese' }, 'check pattern cmd two')
     cb(null, {my: 'response'})
   })
+  mus.inbound('*', func())
 
+  // consumer
+  var mu = createMu()
+  mu.outbound('*', func({target: mus}))
+
+  // execute
   mu.dispatch({role: 'test', cmd: 'one', fish: 'cheese'}, function (err, result) {
     t.equal(null, err, 'check err is null')
-    t.deepEqual({}, result, 'check result is empty')
+    t.deepEqual({}, result, 'check response is empty')
   })
 
   mu.dispatch({role: 'test', cmd: 'two', fish: 'cheese'}, function (err, result) {
     t.equal(null, err, 'check err is null')
     t.deepEqual({my: 'response'}, result, 'check result')
   })
-})
-
-
-
-test('route print test', function (t) {
-  t.plan(2)
-
-  var mu = Mu()
-  mu.inbound('*', func())
-
-  mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
-    t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
-    cb()
-  })
-
-  mu.define({role: 'test', cmd: 'two'}, function (args, cb) {
-    t.deepEqual(args.pattern, { role: 'test', cmd: 'two', fish: 'cheese' }, 'check pattern cms two')
-    cb(null, {my: 'response'})
-  })
-
-  var routing = mu.print()
-  t.notEqual(routing.indexOf('{"cmd":"one","role":"test"}'), -1)
-  t.notEqual(routing.indexOf('{"cmd":"two","role":"test"}'), -1)
 })
 

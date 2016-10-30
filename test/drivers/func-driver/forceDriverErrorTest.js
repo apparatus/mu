@@ -15,14 +15,13 @@
 'use strict'
 
 var test = require('tap').test
-var Mu = require('../../../core/core')
+var createMu = require('../../../core/core')
 var func = require('../../../drivers/func')
 
-
-test('force an error with function trasport test for coverage numbers', function (t) {
+test('force an error with function transport test for coverage numbers', function (t) {
   t.plan(1)
 
-  var mu1 = Mu()
+  var mu1 = createMu()
 
   mu1.define({role: 's1', cmd: 'one'}, function (args, cb) {
     cb()
@@ -34,7 +33,7 @@ test('force an error with function trasport test for coverage numbers', function
 
   mu1.inbound('*', func())
 
-  var mu = Mu()
+  var mu = createMu()
 
   mu.outbound({role: 's1'}, func({target: mu1}))
 
@@ -46,3 +45,5 @@ test('force an error with function trasport test for coverage numbers', function
     t.pass('expect no response from driver fail')
   }, 500)
 })
+
+

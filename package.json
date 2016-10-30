@@ -1,7 +1,7 @@
 {
   "name": "mu",
   "description": "A message based router for building distributed systems",
-  "version": "0.0.1",
+  "version": "1.1.0",
   "license": "MIT",
   "author": "Peter Elger (https://github.com/pelger)",
   "contributors": [
@@ -30,9 +30,11 @@
     "coveralls": "tap 'test/**/*Test.js' --cov --coverage-report=text-lcov | coveralls"
   },
   "dependencies": {
-    "lodash": "^4.13.1",
-    "patrun": "^0.5.0",
-    "redis": "^2.6.2",
+    "bloomrun": "^2.3.0",
+    "fast-safe-stringify": "^1.1.1",
+    "lodash.clonedeep": "^4.5.0",
+    "mu-error": "^1.4.1",
+    "pino": "^2.14.0",
     "uuid": "^2.0.2"
   },
   "devDependencies": {

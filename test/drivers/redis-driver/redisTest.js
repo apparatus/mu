@@ -21,10 +21,8 @@ var redis = require('../../../drivers/redis')
 
 function init (cb) {
   require('../../system/service1/service')(function (s1) {
-    // s1.inbound('*', redis.server({redis: redisMock, port: 6379, host: '127.0.0.1', list: 'test'}))
     s1.inbound('*', redis.server({redis: redisMock, port: 6379, host: '127.0.0.1', list: 's1'}))
     require('../../system/service2/service')(function (s2) {
-      // s2.inbound('*', redis.server({redis: redisMock, port: 6379, host: '127.0.0.1', list: 'test'}))
       s2.inbound('*', redis.server({redis: redisMock, port: 6379, host: '127.0.0.1', list: 's2'}))
       cb(s1, s2)
     })

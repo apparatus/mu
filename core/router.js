@@ -14,68 +14,64 @@
 
 'use strict'
 
+var bloomrun = require('bloomrun')
 var assert = require('assert')
-var _ = require('lodash')
-var errors = require('./err')
-
-
+var stringify = require('fast-safe-stringify')
 
 /**
  * pattern router. responsible for the routing table
  */
-module.exports = function (logger) {
-  var patrun = require('patrun')()
-  var defaultTf = null
+module.exports = function (opts) {
+  var logger = opts.logger
+  var mue = opts.mue
+  var run = bloomrun({ indexing: 'depth' })
   var idmap = {}
 
+  return {
+    addRoute: addRoute,
+    route: route,
+    tearDown: tearDown,
+    print: print,
+    transports: transports
+  }
 
-  var addRoute = function addRoute (pattern, tf) {
+  function addRoute (pattern, tf) {
     assert(tf, 'addRoute requires a valid handler or transport function')
     assert(tf.type && (tf.type === 'handler' || tf.type === 'transport' || tf.type === 'callback'), 'addRoute requires a known type')
 
     if (pattern) {
-      if (_.isString(pattern) && pattern === '*') {
+      if (typeof pattern === 'string' && pattern === '*') {
         logger.debug('adding default route')
-        defaultTf = tf
+        run.default(tf)
       } else {
-        patrun.add(pattern, tf)
+        run.add(pattern, tf)
       }
     }
     idmap['' + tf.muid] = tf
   }
 
-
-
   /**
    * main routing function
    */
-  var route = function route (message, cb) {
+  function route (message, cb) {
     assert(message, 'route requries a valid message')
     assert(cb && (typeof cb === 'function'), 'route requries a valid callback handler')
 
     if (message && message.pattern) {
-
       // we are routing an outbound message as there is a pattern attached to the message
-      var tf = patrun.find(message.pattern)
-
-      if (!tf && defaultTf) {
-        logger.debug('using default route for: ' + message.pattern)
-        tf = defaultTf
-      }
+      var tf = run.lookup(message.pattern)
 
       if (tf) {
-
         // message will be handled in this process instance. In this case just reflect the error and
         // response parameters back to the callback handler. This will either be local in the case of a single
         // process instance or more likely in transport.js. This will pack the error and response paramters into
         // a protocol packet send
         if (tf.type === 'handler') {
-          logger.debug('handling message: ' + JSON.stringify(message))
+          logger.debug(message, 'handling message')
           tf.tf(message, function (err, response) {
-            cb(err || null, response || {})
+            cb(mue.wrap(err || null), response || {})
           })
         } else if (tf.type === 'transport') {
-
           // update the repsponse routing information
           if (!idmap['' + message.protocol.path[message.protocol.path.length - 1]] && message.protocol.inboundIfc) {
             idmap['' + message.protocol.path[message.protocol.path.length - 1]] = idmap['' + message.protocol.inboundIfc]
@@ -86,105 +82,81 @@ module.exports = function (logger) {
           // be logged and an exception thrown. This will result in this node crashing and restarting - this is by design
           if (tf.direction === 'outbound') {
             tf.tf(message, function (err) {
-              if (err) { return cb(err) }
+              if (err) {
+                return cb(mue.wrap(err))
+              }
             })
           } else {
             logger.error('Routing error: no valid outbound route or handler available. Message will be discarded')
-            cb({type: errors.TRANSPORT_ERR, message: 'Routing error: no valid outbound route available. Message will be discarded'})
+            cb(mue.transport('Routing error: no valid outbound route available. Message will be discarded'))
           }
         }
       } else {
-
         // unable to find a route, discard message
-        logger.error('Routing error no matching route and no defualt route provided, Message will be discarded')
-        logger.debug(JSON.stringify(message))
-        cb({type: errors.TRANSPORT_ERR, message: 'Routing error no matching route and no defualt route provided, Message will be discarded', data: message})
+        logger.error('Routing error no matching route and no default route provided, Message will be discarded')
+        logger.debug(message, 'discarded message')
+        cb(mue.transport('Routing error no matching route and no default route provided, Message will be discarded', message))
       }
     } else if (message && message.response) {
-
       // we are routing a response message as there is a response block on the message and no pattern block
       assert(message.protocol)
 
       // pull the last muid in the chain
       var muid = message.protocol.path[message.protocol.path.length - 1]
       if (idmap[muid]) {
-
         // we have a matching muid check if the response handler is in this instance of mu, it it is call the callback handler
         // this will be the last step in the distributed call chain. Otherwise the message is being routed through a transport layer
         // so call the tf and invoke the local callback once the message has been sent
         if (idmap[muid].type === 'callback') {
-          idmap[muid].tf(message.response.err || null, message.response)
+          idmap[muid].tf(mue.remote(message.response.err || null), message.response)
         } else {
           idmap[muid].tf(message, function (err, response) {
-            cb(err, response)
+            cb(mue.wrap(err), response)
           })
         }
       } else {
-
         // there is no available transport or handler for this mu id, this should never happen, discard the packet...
-        logger.error('routing error no available response transport function for: ' + JSON.stringify(message))
-        cb('routing error no available response transport function for: ' + JSON.stringify(message))
+        logger.error(message, 'routing error no available response transport function for')
+        cb(mue.framework('routing error no available response transport function', message))
       }
     } else {
-
       // missing both pattern and response fields, this should never happen, discard packet...
-      logger.error('Malformed packet no pattern or response field. Message will be discarded')
-      logger.debug(JSON.stringify(message))
-      cb({type: errors.TRANSPORT_ERR, message: 'Malformed packet no pattern or response field. Message will be discarded', data: message})
+      logger.error('malformed packet no pattern or response field. Message will be discarded')
+      logger.debug(message, 'malformed message')
+      cb(mue.transport('Malformed packet no pattern or response field. Message will be discarded', message))
     }
   }
 
-
-
-  var tearDown = function tearDown () {
-    patrun.list().forEach(function (el) {
-      if (el.data && el.data.tearDown) {
-        el.data.tearDown()
+  function tearDown () {
+    run.list().forEach(function (el) {
+      if (el.tearDown) {
+        el.tearDown()
       }
     })
-    if (defaultTf && defaultTf.tearDown) {
-      defaultTf.tearDown()
-    }
   }
 
-
-
-  var transportList = function transportList () {
+  function transports () {
     var result = []
 
-    patrun.list().forEach(function (el) {
+    run.list().forEach(function (el) {
       result.push(el)
     })
-    if (defaultTf) {
-      result.push(defaultTf)
-    }
 
     return result
   }
 
-
-
-  var print = function print () {
+  function print () {
     var result = ''
 
     result += 'patterns:\n'
-    patrun.list().forEach(function (el) {
-      result += JSON.stringify(el.match) + ' : ' + el.data.muid + ' (' + el.data.type + ')' + '\n'
+    run.list(null, { payloads: true, patterns: true }).forEach(function (el) {
+      if (el.default) {
+        result += '*'
+      } else {
+        result += stringify(el.pattern)
+      }
+      result += ' : ' + el.payload.muid + ' (' + el.payload.type + ')' + '\n'
     })
-    if (defaultTf) {
-      result += '* : ' + defaultTf.muid + ' (' + defaultTf.type + ')' + '\n'
-    }
-
     return result
-  }
-
-
-
-  return {
-    addRoute: addRoute,
-    route: route,
-    tearDown: tearDown,
-    print: print,
-    transportList: transportList
   }
 }

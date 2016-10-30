@@ -20,7 +20,6 @@ var tcp = require('../../drivers/tcp')
 var balance = require('../../adapters/balance')
 var service = require('../system/service1/service')
 
-
 function init (cb) {
   service(function (s1) {
     s1.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))
@@ -30,7 +29,6 @@ function init (cb) {
     })
   })
 }
-
 
 test('consume services with tcp balancer adapter', function (t) {
   t.plan(2)

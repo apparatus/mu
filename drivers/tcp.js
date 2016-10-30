@@ -17,6 +17,18 @@
 var tcpDriver = require('./tcp-driver/driver')
 var transport = require('../core/transport')
 
-module.exports.server = function server (options) { return transport(tcpDriver({source: options})) }
-module.exports.client = function client (options) { return transport(tcpDriver({target: options})) }
+module.exports = {
+  server: function server (source) {
+    return function driver (mu, opts) {
+      var drv = tcpDriver({source: source, id: opts.id})
+      return transport(drv, mu, opts)
+    }
+  },
+  client: function client (target) {
+    return function driver (mu, opts) {
+      var drv = tcpDriver({target: target, id: opts.id})
+      return transport(drv, mu, opts)
+    }
+  }
+}
 
