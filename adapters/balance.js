@@ -14,7 +14,9 @@
 
 'use strict'
 
+var assert = require('assert')
 var uuid = require('uuid')
+
 
 /**
  * Load balance transport adapter.
@@ -22,7 +24,7 @@ var uuid = require('uuid')
  */
 module.exports = function balance (transports) {
   return function adapter (mu, opts) {
-    opts = opts || {}
+    assert(opts)
     var direction = opts.direction
     var muid = opts.id || uuid()
     var index = 0

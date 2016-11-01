@@ -24,10 +24,10 @@
   },
   "scripts": {
     "lint": "spacey-standard | snazzy",
-    "test": "tap 'test/**/*Test.js' --branches=90 --statements=90 --functions=90 --lines=90",
+    "test": "tap 'test/**/*.test.js' --branches=90 --statements=90 --functions=90 --lines=90",
     "check": "npm run test && npm run lint",
-    "coverage": "tap 'test/**/*Test.js' --cov --coverage-report=html",
-    "coveralls": "tap 'test/**/*Test.js' --cov --coverage-report=text-lcov | coveralls"
+    "coverage": "tap 'test/**/*.test.js' --cov --coverage-report=html",
+    "coveralls": "tap 'test/**/*.test.js' --cov --coverage-report=text-lcov | coveralls"
   },
   "dependencies": {
     "bloomrun": "^2.3.0",
