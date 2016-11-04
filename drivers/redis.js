@@ -17,7 +17,6 @@
 var redisDriver = require('./redis-driver/driver')
 var transport = require('../core/transport')
 
-
 module.exports = {
   server: function server (source) {
     return function driver (mu, opts) {

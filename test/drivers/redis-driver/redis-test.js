@@ -18,7 +18,6 @@ var test = require('tap').test
 var redisMock = require('fakeredis')
 var redis = require('../../../drivers/redis')
 
-
 function init (cb) {
   require('../../system/service1/service')(function (s1) {
     s1.inbound('*', redis.server({redis: redisMock, port: 6379, host: '127.0.0.1', list: 's1'}))
@@ -28,8 +27,6 @@ function init (cb) {
     })
   })
 }
-
-
 
 test('consume services with redis transport test', function (t) {
   t.plan(1)

@@ -15,33 +15,29 @@
 'use strict'
 
 var net = require('net')
-var EventEmitter = require('events')
+var nos = require('net-object-stream')
+var eos = require('end-of-stream')
+var through = require('through2')
 var stringify = require('fast-safe-stringify')
+var Parse = require('fast-json-parse')
+var pump = require('pump')
+var assert = require('assert')
 var mue = require('mu-error')()
-var SIGNATURE = 4242
 
 /**
  * TCP transport. Simple protocol JSON messages delinated by two byte signature and length field
  * [sig][len][JSON][sig][len][JSON]...
  */
 module.exports = function createTcpDriver (options) {
-  return function tcpDriver (opts, cb) {
-    var emitter = new EventEmitter()
+  return function tcpDriver (opts, receive) {
     var connections = {}
     var connectionsByIp = {}
-    var server
-    if (opts instanceof Function) {
-      cb = opts
-    }
-    opts = opts || {}
-    // receive callback: function(err, msg)
-    // - err indicate a local transport error
-    // NOT an error from the remote
-    emitter.on('receive', cb)
 
-    if (options.source && options.source.host && options.source.port) {
-      listen()
-    }
+    assert(opts, 'transport should always pass opts to tcpDriver')
+    assert(receive instanceof Function, 'transport should always pass receive function to tcpDriver')
+
+    var server = options.source && options.source.host &&
+      options.source.port && listen()
 
     return {
       type: 'tcp',
@@ -49,104 +45,68 @@ module.exports = function createTcpDriver (options) {
       tearDown: tearDown
     }
 
-    function encode (message) {
-      var payload = stringify(message)
-      var buf = new Buffer(Buffer.byteLength(payload) + 4)
-
-      buf.writeInt16BE(SIGNATURE, 0)
-      buf.writeInt16BE(Buffer.byteLength(payload) + 4, 2)
-      buf.write(payload, 4, 'ascii')
-      return buf
-    }
-
     function send (message, cb) {
       if (!connections[message.protocol.dst]) {
-        connections[message.protocol.dst] = net.createConnection(options.target.port, options.target.host)
+        var socket = net.createConnection(options.target.port, options.target.host)
+        connections[message.protocol.dst] = nos(socket, {codec: codec(socket)})
 
-        connections[message.protocol.dst].on('connect', function () {
+        connections[message.protocol.dst].on('data', function (data) {
+          if (data instanceof Error) {
+            receive(data)
+            socket.end()
+            return
+          }
+          receive(null, data)
         })
 
-        connections[message.protocol.dst].on('data', function (buf) {
-          var inbound
-          var index = 0
+        socket.on('error', function (err) { cb(mue.transport(err)) })
 
-          do {
-            inbound = parse(buf, index)
-            if (inbound.data) {
-              emitter.emit('receive', null, inbound.data)
-            }
-            index = inbound.index
-          } while (inbound.data)
-        })
-
-        connections[message.protocol.dst].on('end', function () {
+        eos(connections[message.protocol.dst], function () {
           connections[message.protocol.dst] = null
         })
-
-        connections[message.protocol.dst].on('error', function (err) {
-          connections[message.protocol.dst] = null
-          cb(mue.wrap(err || null))
-        })
       }
-      connections[message.protocol.dst].write(encode(message))
-    }
 
-    function parse (buf, index) {
-      var byteLength
-      var sig = false
-      var payload
-      var result = null
-
-      while (!sig && index < buf.length - 6) {
-        if (buf.readInt16BE(index) === SIGNATURE) {
-          sig = true
-        }
-        index += 1
-      }
-      index += 1
-
-      if (sig) {
-        byteLength = buf.readInt16BE(index)
-        index += 2
-        payload = buf.slice(index, index + byteLength - 4).toString()
-        result = JSON.parse(payload)
-      }
-      return {index: index + byteLength - 4, data: result}
+      connections[message.protocol.dst].write(message)
     }
 
     function listen () {
-      server = net.createServer(function (c) {
-        c.on('data', function (buf) {
-          var inbound
-          var index = 0
+      return net.createServer(function (socket) {
+        socket = nos(socket, {codec: codec(socket)})
 
-          do {
-            inbound = parse(buf, index)
-            if (inbound.data) {
-              if (!connections[inbound.data.protocol.src]) {
-                connections[inbound.data.protocol.src] = c
-                connectionsByIp[c.remoteAddress + '_' + c.remotePort] = inbound.data.protocol.src
-              }
-              emitter.emit('receive', null, inbound.data)
-            }
-            index = inbound.index
-          } while (inbound.data)
+        var inbound = through.obj(function (data, _, cb) {
+          if (data instanceof Error) {
+            cb(data)
+            return
+          }
+
+          if (!connections[data.protocol.src]) {
+            connections[data.protocol.src] = socket
+            connectionsByIp[socket.remoteAddress + '_' + socket.remotePort] = data.protocol.src
+          }
+
+          receive(null, data)
+          cb()
         })
 
-        c.on('end', function () {
-          connections[connectionsByIp[c.remoteAddress + '_' + c.remotePort]] = null
-          connectionsByIp[c.remoteAddress + '_' + c.remotePort] = null
+        pump(socket, inbound, socket, function (err) {
+          connections[connectionsByIp[socket.remoteAddress + '_' + socket.remotePort]] = null
+          connectionsByIp[socket.remoteAddress + '_' + socket.remotePort] = null
+          if (err) { receive(mue.transport(err)) }
         })
+      }).listen(options.source.port, options.source.host)
+    }
 
-        /*
-        c.on('error', function (err) {
-          connections[connectionsByIp[c.remoteAddress + '_' + c.remotePort]].destroy()
-          connectionsByIp[c.remoteAddress + '_' + c.remotePort] = null
-          emitter.emit('receive', err || null, null)
-        })
-        */
-      })
-      server.listen(options.source.port, options.source.host)
+    function codec () {
+      return {
+        encode: stringify,
+        decode: function decode (data) {
+          var result = new Parse(data)
+          if (result.err) {
+            return mue.transport(result.err)
+          }
+          return result.value
+        }
+      }
     }
 
     function tearDown () {
