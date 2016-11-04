@@ -17,7 +17,6 @@
 var assert = require('assert')
 var uuid = require('uuid')
 
-
 /**
  * Load balance transport adapter.
  * distributes requests round robin to each supplied transport

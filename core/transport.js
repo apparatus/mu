@@ -28,7 +28,7 @@ module.exports = function transport (createDriver, mu, opts) {
   var direction = opts.direction
   var muid = opts.id || uuid()
   var logger = mu.log.child({muid: muid})
-  var driver = createDriver({id: muid}, recieve)
+  var driver = createDriver({id: muid}, receive)
 
   return {
     muid: muid,
@@ -39,10 +39,8 @@ module.exports = function transport (createDriver, mu, opts) {
     tearDown: driver.tearDown
   }
 
-  function recieve (err, msg) {
+  function receive (err, msg) {
     logger.debug({in: msg}, 'message received')
-    msg.protocol.inboundIfc = muid
-
     if (err) {
       // received an error condition from the driver,
       // typically this signals a failed client connection
@@ -52,6 +50,9 @@ module.exports = function transport (createDriver, mu, opts) {
       logger.error(err)
       return
     }
+
+    msg.protocol.inboundIfc = muid
+
     mu.dispatch(msg, function (err, response) {
       var packet
       var message = cloneDeep(msg)

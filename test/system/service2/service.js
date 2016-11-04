@@ -16,7 +16,6 @@
 
 var mu = require('../../../core/core')()
 
-
 module.exports = function (cb) {
   mu.define({role: 's2', cmd: 'one'}, function (args, cb) {
     cb()

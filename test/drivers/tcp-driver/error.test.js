@@ -15,8 +15,10 @@
 'use strict'
 
 var test = require('tap').test
-var mu = require('../../../core/core')()
+var createMu = require('../../../core/core')
+var mu = createMu()
 var tcp = require('../../../drivers/tcp')
+var net = require('net')
 var errorService = require('../../system/errorService/service')
 
 function init (cb) {
@@ -35,6 +37,59 @@ test('test no service', function (t) {
     t.is(err.isMu, true)
     t.is(err.code, 'ECONNREFUSED', 'check connection refused')
     t.end()
+  })
+})
+
+test('test mangled data received by server', function (t) {
+  var server = createMu()
+  var childLogger = server.log.child({})
+  server.log.child = function () {
+    return Object.assign(childLogger, {
+      error: function (err) {
+        t.ok(err, 'error sent to logger')
+        t.ok(err instanceof Error, 'is instance of Error')
+        t.ok(err instanceof SyntaxError, 'is instance of SyntaxError')
+        t.is(err.message.slice(0, 16), 'Unexpected token', 'message is unexpected token')
+      }
+    })
+  }
+
+  server.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))
+  var socket = net.connect(3001, '127.0.0.1')
+  socket.write(Buffer.from('99027c227061747465726e223a7b226869223a22796f75227d2c2270726f746f636f6c223a7b2270617468223a5b2261336137666336312d343661652d343462352d626535352d613731343639646336393139222c2237393930396339302d303739392d346361302d396530612d623636356663303231623932225d2c227472616365223a5b2261336137666336312d343661652d343462352d626535352d613731343639646336393139222c2237393930396339302d303739392d346361302d396530612d623636356663303231623932225d2c2274746c223a31302c22647374223a22746172676574222c22737263223a2237393930396339302d303739392d346361302d396530612d623636356663303231623932227d7d', 'hex'))
+  socket.on('close', function () {
+    t.pass('server closed socket')
+    server.tearDown()
+    t.end()
+  })
+})
+
+test('test mangled data received by client', function (t) {
+  var server = net.createServer(function (socket) {
+    socket.write(Buffer.from('99027c227061747465726e223a7b226869223a22796f75227d2c2270726f746f636f6c223a7b2270617468223a5b2261336137666336312d343661652d343462352d626535352d613731343639646336393139222c2237393930396339302d303739392d346361302d396530612d623636356663303231623932225d2c227472616365223a5b2261336137666336312d343661652d343462352d626535352d613731343639646336393139222c2237393930396339302d303739392d346361302d396530612d623636356663303231623932225d2c2274746c223a31302c22647374223a22746172676574222c22737263223a2237393930396339302d303739392d346361302d396530612d623636356663303231623932227d7d', 'hex'))
+    socket.on('close', function () {
+      t.pass('client closed socket')
+      client.tearDown()
+      server.close()
+      t.end()
+    })
+  }).listen(3001)
+
+  var client = createMu()
+  var childLogger = client.log.child({})
+  client.log.child = function () {
+    return Object.assign(childLogger, {
+      error: function (err) {
+        t.ok(err, 'error sent to logger')
+        t.ok(err instanceof Error, 'is instance of Error')
+        t.ok(err instanceof SyntaxError, 'is instance of SyntaxError')
+        t.is(err.message.slice(0, 16), 'Unexpected token', 'message is unexpected token')
+      }
+    })
+  }
+  client.outbound('*', tcp.client({port: 3001, host: '127.0.0.1'}))
+  client.dispatch({hi: 'you'}, function (err) {
+    console.log(err)
   })
 })
 

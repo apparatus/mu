@@ -18,7 +18,6 @@ var assert = require('assert')
 var uuid = require('uuid')
 var cloneDeep = require('lodash.clonedeep')
 
-
 /**
  * Tee transport adapter. Sends request to each supplied transport
  */

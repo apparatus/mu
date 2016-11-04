@@ -71,7 +71,6 @@ module.exports = function createRedisDriver (options) {
       tearDown: tearDown
     }
 
-
     function listen (cb) {
       var listName
 
@@ -98,8 +97,6 @@ module.exports = function createRedisDriver (options) {
       brpopQueue()
     }
 
-
-
     function send (message, cb) {
       if (options.source) {
         rout.lpush(options.source.list + '_res', stringify(message), function (err) {
@@ -112,8 +109,6 @@ module.exports = function createRedisDriver (options) {
         })
       }
     }
-
-
 
     function tearDown () {
       tearingDown = true
