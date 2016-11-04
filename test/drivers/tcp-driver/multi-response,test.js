@@ -47,5 +47,3 @@ test('consume services expect two responses', function (t) {
     }, 500)
   })
 })
-
-

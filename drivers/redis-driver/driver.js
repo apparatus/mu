@@ -15,7 +15,8 @@
 'use strict'
 
 var EventEmitter = require('events')
-
+var stringify = require('fast-safe-stringify')
+var assert = require('assert')
 
 /**
  * options
@@ -42,6 +43,8 @@ module.exports = function createRedisDriver (options) {
     opts = opts || {}
 
     emitter.on('receive', cb)
+
+    assert(options, 'redis driver requires an options object')
 
     if (options.source && options.source.redis) {
       redis = options.source.redis
@@ -99,12 +102,12 @@ module.exports = function createRedisDriver (options) {
 
     function send (message, cb) {
       if (options.source) {
-        rout.lpush(options.source.list + '_res', JSON.stringify(message), function (err) {
+        rout.lpush(options.source.list + '_res', stringify(message), function (err) {
           cb(err)
         })
       }
       if (options.target) {
-        rout.lpush(options.target.list + '_req', JSON.stringify(message), function (err) {
+        rout.lpush(options.target.list + '_req', stringify(message), function (err) {
           cb(err)
         })
       }

@@ -50,28 +50,3 @@ test('consume services with tcp tee adapter', function (t) {
     }, 1500)
   })
 })
-
-/*
-test('branch coverage', function (t) {
-  t.plan(6)
-
-  init(function (s1, s2) {
-    mu.outbound({role: 's1'}, tee([tcp.client({port: 3001, host: '127.0.0.1'}),
-                                   tcp.client({port: 3002, host: '127.0.0.1'})]))
-    mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
-      t.equal(null, err)
-      mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
-        t.equal(null, err)
-      })
-    })
-
-    setTimeout(function () {
-      mu.tearDown()
-      s1.tearDown()
-      s2.tearDown()
-    }, 1500)
-  })
-})
-
-*/
-

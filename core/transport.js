@@ -23,8 +23,8 @@ var cloneDeep = require('lodash.clonedeep')
  *  {pattern: { pattern and data }, proto: { path: [1234, 4567], trace: [1234, 4567], ttl: 9}}
  *  {response: { response data }, proto: { path: [1234], dst: 4567, trace: [1234, 4567, 6789], ttl: 8}}
  */
-module.exports = function (createDriver, mu, opts) {
-  opts = opts || {}
+module.exports = function transport (createDriver, mu, opts) {
+  assert(opts, 'transport opts should always be defined')
   var direction = opts.direction
   var muid = opts.id || uuid()
   var logger = mu.log.child({muid: muid})
