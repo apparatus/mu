@@ -14,38 +14,34 @@
 
 'use strict'
 
-var assert = require('assert')
-var uuid = require('uuid')
+var test = require('tap').test
+var createMu = require('../../../core/core')
+var func = require('../../../drivers/func')
 
+test('force an error with function transport test for coverage numbers', function (t) {
+  t.plan(1)
 
-/**
- * Load balance transport adapter.
- * distributes requests round robin to each supplied transport
- */
-module.exports = function balance (transports) {
-  return function adapter (mu, opts) {
-    assert(opts)
-    var direction = opts.direction
-    var muid = opts.id || uuid()
-    var index = 0
-    transports = transports.map(function (t) {
-      return t(mu, {direction: direction, id: muid})
-    })
+  var mu1 = createMu()
 
-    return {
-      direction: transports[0].direction,
-      muid: muid,
-      tf: tf,
-      type: 'transport'
-    }
+  mu1.define({role: 's1', cmd: 'one'}, function (args, cb) {
+    cb()
+  })
 
-    function tf (message, cb) {
-      transports[index].tf(message, cb)
-      index++
-      if (index >= transports.length) {
-        index = 0
-      }
-    }
-  }
-}
+  mu1.define({role: 's1', cmd: 'two'}, function (args, cb) {
+    cb(null, {my: 'response'})
+  })
 
+  mu1.inbound('*', func())
+
+  var mu = createMu()
+
+  mu.outbound({role: 's1'}, func({target: mu1}))
+
+  mu.dispatch({role: 's1', cmd: 'one', __err: 'err'}, function () {
+  })
+  setTimeout(function () {
+    mu1.tearDown()
+    mu.tearDown()
+    t.pass('expect no response from driver fail')
+  }, 500)
+})

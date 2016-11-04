@@ -14,37 +14,21 @@
 
 'use strict'
 
-var assert = require('assert')
-var uuid = require('uuid')
+var redisDriver = require('./redis-driver/driver')
+var transport = require('../core/transport')
 
 
-/**
- * Load balance transport adapter.
- * distributes requests round robin to each supplied transport
- */
-module.exports = function balance (transports) {
-  return function adapter (mu, opts) {
-    assert(opts)
-    var direction = opts.direction
-    var muid = opts.id || uuid()
-    var index = 0
-    transports = transports.map(function (t) {
-      return t(mu, {direction: direction, id: muid})
-    })
-
-    return {
-      direction: transports[0].direction,
-      muid: muid,
-      tf: tf,
-      type: 'transport'
+module.exports = {
+  server: function server (source) {
+    return function driver (mu, opts) {
+      var drv = redisDriver({source: source, id: opts.id})
+      return transport(drv, mu, opts)
     }
-
-    function tf (message, cb) {
-      transports[index].tf(message, cb)
-      index++
-      if (index >= transports.length) {
-        index = 0
-      }
+  },
+  client: function client (target) {
+    return function driver (mu, opts) {
+      var drv = redisDriver({target: target, id: opts.id})
+      return transport(drv, mu, opts)
     }
   }
 }

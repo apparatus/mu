@@ -14,15 +14,17 @@
 
 'use strict'
 
+var assert = require('assert')
 var uuid = require('uuid')
 var cloneDeep = require('lodash.clonedeep')
+
 
 /**
  * Tee transport adapter. Sends request to each supplied transport
  */
 module.exports = function tee (transports) {
   return function adapter (mu, opts) {
-    opts = opts || {}
+    assert(opts)
     var direction = opts.direction
     var muid = opts.id || uuid()
 
