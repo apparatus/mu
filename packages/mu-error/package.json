@@ -1,6 +1,6 @@
 {
   "name": "mu-error",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "The official error handling library for mu, provides distributed error handling functionality",
   "main": "index.js",
   "scripts": {
