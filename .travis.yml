@@ -7,7 +7,7 @@ node_js:
   - 'node'
 
 script:
-  - npm run check
+  - npm run ci
 
 after_script:
   - npm run coveralls

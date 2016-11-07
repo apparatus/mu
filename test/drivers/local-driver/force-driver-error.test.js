@@ -14,12 +14,34 @@
 
 'use strict'
 
-var funcDriver = require('./function-driver/driver')
-var transport = require('../core/transport')
+var test = require('tap').test
+var createMu = require('../../../packages/mu')
+var local = require('../../../packages/mu-local')
 
-module.exports = function (options) {
-  return function driver (mu, opts) {
-    return transport(funcDriver(options), mu, opts)
-  }
-}
+test('force an error with function transport test for coverage numbers', function (t) {
+  t.plan(1)
 
+  var mu1 = createMu()
+
+  mu1.define({role: 's1', cmd: 'one'}, function (args, cb) {
+    cb()
+  })
+
+  mu1.define({role: 's1', cmd: 'two'}, function (args, cb) {
+    cb(null, {my: 'response'})
+  })
+
+  mu1.inbound('*', local())
+
+  var mu = createMu()
+
+  mu.outbound({role: 's1'}, local({target: mu1}))
+
+  mu.dispatch({role: 's1', cmd: 'one', __err: 'err'}, function () {
+  })
+  setTimeout(function () {
+    mu1.tearDown()
+    mu.tearDown()
+    t.pass('expect no response from driver fail')
+  }, 500)
+})

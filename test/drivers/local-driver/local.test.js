@@ -15,16 +15,16 @@
 'use strict'
 
 var test = require('tap').test
-var func = require('../../../drivers/func')
+var local = require('../../../packages/mu-local')
 var service1 = require('../../system/service1/service')
 var service2 = require('../../system/service2/service')
 var createConsumer = require('../../system/consumer/consumer')
 
 function init (cb) {
   service1(function (s1) {
-    s1.inbound('*', func())
+    s1.inbound('*', local())
     service2(function (s2) {
-      s2.inbound('*', func())
+      s2.inbound('*', local())
       cb(s1, s2)
     })
   })
@@ -35,8 +35,8 @@ test('consume services with function transport test', function (t) {
 
   init(function (s1, s2) {
     var consumer = createConsumer()
-    consumer.mu.outbound({role: 's1'}, func({target: s1}))
-    consumer.mu.outbound({role: 's2'}, func({target: s2}))
+    consumer.mu.outbound({role: 's1'}, local({target: s1}))
+    consumer.mu.outbound({role: 's2'}, local({target: s2}))
 
     consumer.consume(function (err, result) {
       t.equal(err, null, 'check err is null')

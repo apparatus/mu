@@ -14,7 +14,7 @@
 
 'use strict'
 
-var mu = require('../../../core/core')()
+var mu = require('../../../packages/mu')()
 
 module.exports = function () {
   function consumeZero (cb) {

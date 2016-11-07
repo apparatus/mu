@@ -1,0 +1,36 @@
+{
+  "name": "mu-error",
+  "version": "1.4.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "browser-test": "zuul tape test --local",
+    "cov": "tap test --cov",
+    "html-cov": "tap test --coverage-report=html",
+    "ci": "standard && tap test --coverage-report=lcov && codecov",
+    "test": "tap test",
+    "lint": "standard"
+  },
+  "pre-commit": [
+    "lint",
+    "test"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apparatus/mu.git"
+  },
+  "keywords": [],
+  "author": "David Mark Clements",
+  "license": "MIT",
+  "dependencies": {
+    "boom": "^4.2.0"
+  },
+  "devDependencies": {
+    "codecov": "^1.0.1",
+    "pre-commit": "^1.1.3",
+    "standard": "^8.5.0",
+    "tap": "^8.0.0",
+    "tape": "^4.6.2",
+    "zuul": "^3.11.1"
+  }
+}

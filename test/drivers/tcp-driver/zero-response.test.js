@@ -15,7 +15,7 @@
 'use strict'
 
 var test = require('tap').test
-var tcp = require('../../../drivers/tcp')
+var tcp = require('../../../packages/mu-tcp')
 var rcc = require('../../system/consumer/responseCountConsumer')()
 var zrs = require('../../system/zeroResponseService/service')
 

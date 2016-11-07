@@ -18,7 +18,7 @@ var assert = require('assert')
 var uuid = require('uuid')
 var pino = require('pino')
 var muError = require('mu-error')
-var createRouter = require('./router')
+var createRouter = require('mu-router')
 var DEFAULT_TTL = 10
 
 function createMu (opts) {

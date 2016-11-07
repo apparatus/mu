@@ -14,34 +14,21 @@
 
 'use strict'
 
-var test = require('tap').test
-var createMu = require('../../../core/core')
-var func = require('../../../drivers/func')
+var transport = require('mu-transport')
+var tcpDriver = require('./driver')
 
-test('force an error with function transport test for coverage numbers', function (t) {
-  t.plan(1)
+module.exports = {
+  server: function server (source) {
+    return function driver (mu, opts) {
+      var drv = tcpDriver({source: source, id: opts.id})
+      return transport(drv, mu, opts)
+    }
+  },
+  client: function client (target) {
+    return function driver (mu, opts) {
+      var drv = tcpDriver({target: target, id: opts.id})
+      return transport(drv, mu, opts)
+    }
+  }
+}
 
-  var mu1 = createMu()
-
-  mu1.define({role: 's1', cmd: 'one'}, function (args, cb) {
-    cb()
-  })
-
-  mu1.define({role: 's1', cmd: 'two'}, function (args, cb) {
-    cb(null, {my: 'response'})
-  })
-
-  mu1.inbound('*', func())
-
-  var mu = createMu()
-
-  mu.outbound({role: 's1'}, func({target: mu1}))
-
-  mu.dispatch({role: 's1', cmd: 'one', __err: 'err'}, function () {
-  })
-  setTimeout(function () {
-    mu1.tearDown()
-    mu.tearDown()
-    t.pass('expect no response from driver fail')
-  }, 500)
-})

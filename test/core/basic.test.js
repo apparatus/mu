@@ -15,8 +15,8 @@
 'use strict'
 
 var test = require('tap').test
-var createMu = require('../../core/core')
-var func = require('../../drivers/func')
+var createMu = require('../../packages/mu')
+var local = require('../../packages/mu-local')
 
 test('local handler test', function (t) {
   t.plan(6)
@@ -48,7 +48,7 @@ test('route print test', function (t) {
   t.plan(2)
 
   var mu = createMu()
-  mu.inbound('*', func())
+  mu.inbound('*', local())
 
   mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
     t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')

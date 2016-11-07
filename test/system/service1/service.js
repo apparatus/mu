@@ -13,9 +13,10 @@
  */
 
 'use strict'
+var createMu = require('../../../packages/mu')
 
 module.exports = function (cb) {
-  var mu = require('../../../core/core')()
+  var mu = createMu()
 
   mu.define({role: 's1', cmd: 'one'}, function (args, cb) {
     cb()

@@ -15,10 +15,10 @@
 'use strict'
 
 var test = require('tap').test
-var tcp = require('../../../drivers/tcp')
+var tcp = require('../../../packages/mu-tcp')
 var service1 = require('../../system/service1/service')
 var createConsumer = require('../../system/consumer/consumer')
-var createMu = require('../../..')
+var createMu = require('../../../packages/mu')
 
 function init (cb) {
   service1(function (s1) {

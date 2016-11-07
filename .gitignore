@@ -23,3 +23,15 @@ options.mine.js
 db/
 data/
 .nyc_output/
+pids
+*.seed
+lib-cov
+coverage
+.grunt
+.lock-wscript
+build/Release
+.npm
+.node_repl_history
+.__browserify_string_empty.js
+profile-*
+.nyc_output/

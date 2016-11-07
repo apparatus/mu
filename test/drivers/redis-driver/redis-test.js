@@ -16,7 +16,7 @@
 
 var test = require('tap').test
 var redisMock = require('fakeredis')
-var redis = require('../../../drivers/redis')
+var redis = require('../../../packages/mu-redis')
 
 function init (cb) {
   require('../../system/service1/service')(function (s1) {

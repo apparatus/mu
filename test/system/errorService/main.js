@@ -14,7 +14,7 @@
 
 'use strict'
 
-var tcp = require('../../../drivers/tcp')
+var tcp = require('../../../packages/mu-tcp')
 
 require('./service')(function (errSvc) {
   errSvc.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))

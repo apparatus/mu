@@ -15,9 +15,9 @@
 'use strict'
 
 var test = require('tap').test
-var mu = require('../../core/core')()
-var tcp = require('../../drivers/tcp')
-var tee = require('../../adapters/tee')
+var mu = require('../../packages/mu')()
+var tcp = require('../../packages/mu-tcp')
+var tee = require('../../packages/mu-tee')
 var service = require('../system/service1/service')
 
 function init (cb) {

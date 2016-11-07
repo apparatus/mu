@@ -15,9 +15,9 @@
 'use strict'
 
 var test = require('tap').test
-var mu = require('../../core/core')()
-var tcp = require('../../drivers/tcp')
-var balance = require('../../adapters/balance')
+var mu = require('../../packages/mu')()
+var tcp = require('../../packages/mu-tcp')
+var balance = require('../../packages/mu-balance')
 var service = require('../system/service1/service')
 
 function init (cb) {
@@ -31,8 +31,6 @@ function init (cb) {
 }
 
 test('consume services with tcp balancer adapter', function (t) {
-  t.plan(2)
-
   init(function (s1, s2) {
     mu.outbound({role: 's1'}, balance([tcp.client({port: 3001, host: '127.0.0.1'}),
                                        tcp.client({port: 3002, host: '127.0.0.1'})]))
@@ -43,6 +41,7 @@ test('consume services with tcp balancer adapter', function (t) {
         mu.tearDown()
         s1.tearDown()
         s2.tearDown()
+        t.end()
       })
     })
   })
