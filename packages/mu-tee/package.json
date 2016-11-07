@@ -1,7 +1,7 @@
 {
   "name": "mu-tee",
   "version": "1.0.0",
-  "description": "",
+  "description": "An official transport adapter for mu that sends each request to every supplied transport",
   "main": "index.js",
   "keywords": [
     "tee",

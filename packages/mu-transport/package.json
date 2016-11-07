@@ -1,7 +1,7 @@
 {
   "name": "mu-transport",
   "version": "1.0.0",
-  "description": "",
+  "description": "The official protocol implementation and transport driver factory used internally by mu",
   "main": "index.js",
   "keywords": [
     "mu",

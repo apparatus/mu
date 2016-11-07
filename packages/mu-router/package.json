@@ -1,7 +1,7 @@
 {
   "name": "mu-router",
   "version": "1.0.0",
-  "description": "",
+  "description": "The official pattern router for mu",
   "main": "index.js",
   "keywords": [
     "mu",

@@ -1,7 +1,7 @@
 {
   "name": "mu-tcp",
   "version": "1.0.0",
-  "description": "",
+  "description": "The official TCP transport driver for mu",
   "main": "index.js",
   "keywords": [
     "tcp",

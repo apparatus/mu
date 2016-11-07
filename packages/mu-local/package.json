@@ -1,7 +1,7 @@
 {
   "name": "mu-local",
   "version": "1.0.0",
-  "description": "",
+  "description": "An official local transport driver for mu, it allows for in-process/in-browser message dispatching",
   "main": "index.js",
   "keywords": [
     "local",

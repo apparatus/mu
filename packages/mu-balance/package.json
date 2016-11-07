@@ -1,7 +1,7 @@
 {
   "name": "mu-balance",
   "version": "1.0.0",
-  "description": "",
+  "description": "The official load balance transport adapter for mu that distributes requests round robin to each supplied transport",
   "main": "index.js",
   "keywords": [
     "balancer",
