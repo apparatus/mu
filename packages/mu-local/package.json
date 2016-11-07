@@ -1,0 +1,29 @@
+{
+  "name": "mu-local",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [
+    "local",
+    "mu",
+    "transport",
+    "microservices",
+    "messaging",
+    "router",
+    "distributed"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apparatus/mu.git"
+  },
+  "author": "Peter Elger (https://github.com/pelger)",
+  "contributors": [
+    "David Mark Clements (https://github.com/davidmarkclements)",
+    "Dean McDonnell (https://github.com/mcdonnelldean)",
+    "Matteo Collina (https://github.com/mcollina)"
+  ],
+  "dependencies": {
+    "mu-transport": "^1.0.0"
+  },
+  "license": "MIT"
+}

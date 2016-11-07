@@ -14,12 +14,11 @@
 
 'use strict'
 
-var mu = require('../../../core/core')()
-var mue = require('mu-error')()
+var mu = require('../../../packages/mu')()
 
 module.exports = function (cb) {
   mu.define({role: 'error', cmd: 'error'}, function (args, cb) {
-    cb(mue('oh fek'), null)
+    cb(mu.error('oh fek'), null)
   })
 
   mu.define({role: 'error', cmd: 'crash'}, function (args, cb) {

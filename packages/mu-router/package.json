@@ -1,0 +1,28 @@
+{
+  "name": "mu-router",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [
+    "mu",
+    "microservices",
+    "messaging",
+    "router",
+    "distributed"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apparatus/mu.git"
+  },
+  "author": "Peter Elger (https://github.com/pelger)",
+  "contributors": [
+    "David Mark Clements (https://github.com/davidmarkclements)",
+    "Dean McDonnell (https://github.com/mcdonnelldean)",
+    "Matteo Collina (https://github.com/mcollina)"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "bloomrun": "^2.3.0",
+    "fast-safe-stringify": "^1.1.1"
+  }
+}

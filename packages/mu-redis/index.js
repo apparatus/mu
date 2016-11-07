@@ -14,19 +14,19 @@
 
 'use strict'
 
-var tcpDriver = require('./tcp-driver/driver')
-var transport = require('../core/transport')
+var transport = require('mu-transport')
+var redisDriver = require('./driver')
 
 module.exports = {
   server: function server (source) {
     return function driver (mu, opts) {
-      var drv = tcpDriver({source: source, id: opts.id})
+      var drv = redisDriver({source: source, id: opts.id})
       return transport(drv, mu, opts)
     }
   },
   client: function client (target) {
     return function driver (mu, opts) {
-      var drv = tcpDriver({target: target, id: opts.id})
+      var drv = redisDriver({target: target, id: opts.id})
       return transport(drv, mu, opts)
     }
   }

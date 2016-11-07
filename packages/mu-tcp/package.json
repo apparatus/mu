@@ -1,0 +1,36 @@
+{
+  "name": "mu-tcp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [
+    "tcp",
+    "mu",
+    "transport",
+    "microservices",
+    "messaging",
+    "router",
+    "distributed"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apparatus/mu.git"
+  },
+  "author": "Peter Elger (https://github.com/pelger)",
+  "contributors": [
+    "David Mark Clements (https://github.com/davidmarkclements)",
+    "Dean McDonnell (https://github.com/mcdonnelldean)",
+    "Matteo Collina (https://github.com/mcollina)"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "end-of-stream": "^1.1.0",
+    "fast-json-parse": "^1.0.2",
+    "fast-safe-stringify": "^1.1.1",
+    "mu-error": "^1.4.1",
+    "mu-transport": "^1.0.0",
+    "net-object-stream": "^2.0.0",
+    "pump": "^1.0.1",
+    "through2": "^2.0.1"
+  }
+}

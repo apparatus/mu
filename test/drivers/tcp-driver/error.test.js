@@ -15,9 +15,9 @@
 'use strict'
 
 var test = require('tap').test
-var createMu = require('../../../core/core')
+var createMu = require('../../../packages/mu')
 var mu = createMu()
-var tcp = require('../../../drivers/tcp')
+var tcp = require('../../../packages/mu-tcp')
 var net = require('net')
 var errorService = require('../../system/errorService/service')
 

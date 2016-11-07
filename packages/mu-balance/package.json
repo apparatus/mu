@@ -1,0 +1,29 @@
+{
+  "name": "mu-balance",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [
+    "balancer",
+    "mu",
+    "adapter",
+    "microservices",
+    "messaging",
+    "router",
+    "distributed"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apparatus/mu.git"
+  },
+  "author": "Peter Elger (https://github.com/pelger)",
+  "contributors": [
+    "David Mark Clements (https://github.com/davidmarkclements)",
+    "Dean McDonnell (https://github.com/mcdonnelldean)",
+    "Matteo Collina (https://github.com/mcollina)"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "uuid": "^2.0.3"
+  }
+}

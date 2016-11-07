@@ -1,0 +1,14 @@
+{
+  "lerna": "2.0.0-beta.30",
+  "version": "independent",
+  "changelog": {
+    "repo": "apparatus/mu",
+    "labels": {
+      "tag: breaking": ":boom: Breaking Change",
+      "tag: feature": ":rocket: New Feature",
+      "tag: fix": ":bug: Bug Fix",
+      "tag: docs": ":memo: Documentation",
+      "tag: internal": ":house: Internal"
+    }
+  }
+}
