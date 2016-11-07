@@ -157,14 +157,14 @@ Copyright Peter Elger 2016 & Contributors, Licensed under [MIT][].
 
 [mu]: packages/mu
 [mu-error]: packages/mu-error
-[mu-local]: [packages/mu-local]
-[mu-tcp]: [packages/mu-tcp]
-[mu-http]: [packages/mu-http]
-[mu-redis]: [packages/mu-redis]
-[mu-balancer]: [packages/mu-balancer]
-[mu-tee]: [packages/mu-tee]
-[mu-router]: [packages/mu-router]
-[mu-transport]: [packages/mu-transport]
+[mu-local]: packages/mu-local
+[mu-tcp]: packages/mu-tcp
+[mu-http]: packages/mu-http
+[mu-redis]: packages/mu-redis
+[mu-balancer]: packages/mu-balancer
+[mu-tee]: packages/mu-tee
+[mu-router]: packages/mu-router
+[mu-transport]: packages/mu-transport
 [travis-badge]: https://travis-ci.org/apparatus/mu.svg?branch=master
 [travis-url]: https://travis-ci.org/apparatus/mu
 [npm-badge]: https://badge.fury.io/js/mu.svg
