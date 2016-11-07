@@ -24,21 +24,12 @@ To install mu, simply use npm,
 $ npm install mu
 ```
 
-### Testing, linting, coverage
-
-- `npm test` - to run tests.
-- `npm run lint` - to lint the code.
-- `npm run coverage` - To run and open a coverage report.
-- `npm run check` - To run all of the above.
-
-__Note:__ This module uses precommit to run `check` on each commit.
-
 ## API
 
 To do..
 
 ## License
-Copyright Peter Elger 2016, Licensed under [MIT][].
+Copyright Peter Elger 2016 & Contributors, Licensed under [MIT][].
 
 
 [travis-badge]: https://travis-ci.org/apparatus/mu.svg?branch=master
