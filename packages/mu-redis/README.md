@@ -1,5 +1,7 @@
 # mu-redis
 
+The official Redis transport driver for mu
+
 [![npm][npm-badge]][npm-url]
 [![travis][travis-badge]][travis-url]
 [![coveralls][coveralls-badge]][coveralls-url]

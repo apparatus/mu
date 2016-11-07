@@ -1,7 +1,7 @@
 {
   "name": "mu-redis",
   "version": "1.0.1",
-  "description": "An official Redis transport driver for mu",
+  "description": "The official Redis transport driver for mu",
   "main": "index.js",
   "keywords": [
     "redis",

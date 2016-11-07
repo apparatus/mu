@@ -1,5 +1,7 @@
 # mu-router
 
+The official pattern router for mu
+
 [![npm][npm-badge]][npm-url]
 [![travis][travis-badge]][travis-url]
 [![coveralls][coveralls-badge]][coveralls-url]

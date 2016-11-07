@@ -1,5 +1,7 @@
 # mu-balance
 
+The official load balance transport adapter for mu that distributes requests round robin to each supplied transport
+
 [![npm][npm-badge]][npm-url]
 [![travis][travis-badge]][travis-url]
 [![coveralls][coveralls-badge]][coveralls-url]
@@ -10,7 +12,7 @@
 
 Part of the Official [mu][Mu Suite].
 
-`mu-balance` is a load balance transport adapter is distributes requests round robin to each supplied transport.
+`mu-balance` is a load balance transport adapter that distributes requests round robin to each supplied transport.
 
 
 * [Install](#install)

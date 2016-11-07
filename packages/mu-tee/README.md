@@ -1,5 +1,7 @@
 # mu-tee
 
+An official transport adapter for mu that sends each request to every supplied transport
+
 [![npm][npm-badge]][npm-url]
 [![travis][travis-badge]][travis-url]
 [![coveralls][coveralls-badge]][coveralls-url]
@@ -10,7 +12,7 @@
 
 Part of the Official [mu][Mu Suite].
 
-`mu-tee` is a transport adapter is sends each request to every supplied transport.
+`mu-tee` is a transport adapter that sends each request to every supplied transport.
 
 
 * [Install](#install)

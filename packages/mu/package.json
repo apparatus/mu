@@ -1,7 +1,7 @@
 {
   "name": "mu",
   "version": "2.0.2",
-  "description": "message based router for building distributed systems",
+  "description": "A message-pattern based router for building distributed systems",
   "main": "index.js",
   "keywords": [
     "microservices",

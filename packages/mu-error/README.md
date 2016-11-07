@@ -1,5 +1,7 @@
 # mu-error
 
+The official error handling library for mu
+
 [![npm][npm-badge]][npm-url]
 [![travis][travis-badge]][travis-url]
 [![coveralls][coveralls-badge]][coveralls-url]

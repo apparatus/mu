@@ -1,5 +1,7 @@
 # mu-transport
 
+The official protocol implementation and transport driver factory used internally by mu
+
 [![npm][npm-badge]][npm-url]
 [![travis][travis-badge]][travis-url]
 [![coveralls][coveralls-badge]][coveralls-url]

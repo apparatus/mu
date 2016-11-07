@@ -1,5 +1,7 @@
 # mu
 
+A message-pattern based router for building distributed systems
+
 [![npm][npm-badge]][npm-url]
 [![travis][travis-badge]][travis-url]
 [![coveralls][coveralls-badge]][coveralls-url]

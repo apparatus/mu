@@ -1,5 +1,7 @@
 # mu-local
 
+The official local transport driver for mu, it allows for in-process/in-browser message dispatching
+
 [![npm][npm-badge]][npm-url]
 [![travis][travis-badge]][travis-url]
 [![coveralls][coveralls-badge]][coveralls-url]
