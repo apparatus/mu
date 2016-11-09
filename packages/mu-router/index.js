@@ -25,7 +25,7 @@ var parallel = require('fastparallel')()
 module.exports = function (opts) {
   var logger = opts.logger
   var mue = opts.mue
-  var run = bloomrun({ indexing: 'depth' })
+  var run = bloomrun({indexing: 'depth'})
   var idmap = {}
 
   return {
@@ -132,6 +132,7 @@ module.exports = function (opts) {
     var list = run.list().map(function (el) {
       return el.tearDown
     }).filter(Boolean)
+
     if (!list.length) {
       if (cb) cb()
       return
@@ -140,17 +141,12 @@ module.exports = function (opts) {
       parallel(null, list, null, cb)
       return
     }
+
     list.forEach(function (tearDown) { tearDown() })
   }
 
   function transports () {
-    var result = []
-
-    run.list().forEach(function (el) {
-      result.push(el)
-    })
-
-    return result
+    return run.list()
   }
 
   function print () {

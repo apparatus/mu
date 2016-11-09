@@ -36,8 +36,12 @@ module.exports = function createTcpDriver (options) {
     assert(opts, 'transport should always pass opts to tcpDriver')
     assert(receive instanceof Function, 'transport should always pass receive function to tcpDriver')
 
-    var server = options.source && options.source.host &&
-      options.source.port && listen()
+    var server = options.source &&
+      listen(options.source.port, options.source.host, options.ready)
+
+    if (!server && options.ready instanceof Function) {
+      options.ready()
+    }
 
     return {
       type: 'tcp',
@@ -69,7 +73,7 @@ module.exports = function createTcpDriver (options) {
       connections[message.protocol.dst].write(message)
     }
 
-    function listen () {
+    function listen (port, host, cb) {
       return net.createServer(function (socket) {
         socket = nos(socket, {codec: codec(socket)})
 
@@ -93,7 +97,7 @@ module.exports = function createTcpDriver (options) {
           connectionsByIp[socket.remoteAddress + '_' + socket.remotePort] = null
           if (err) { receive(mue.transport(err)) }
         })
-      }).listen(options.source.port, options.source.host)
+      }).listen(port, host, cb)
     }
 
     function codec () {
