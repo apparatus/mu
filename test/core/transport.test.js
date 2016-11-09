@@ -50,3 +50,22 @@ test('local inbound/outbound test', function (t) {
   })
 })
 
+test('tearDown cb with local transport', function (t) {
+  t.plan(2)
+
+  // service
+  var mus = createMu()
+  mus.inbound('*', local())
+
+  mus.tearDown(function () {
+    t.pass()
+  })
+
+  // consumer
+  var mu = createMu()
+  mu.outbound('*', local({target: mus}))
+
+  mu.tearDown(function () {
+    t.pass()
+  })
+})

@@ -109,16 +109,25 @@ module.exports = function createTcpDriver (options) {
       }
     }
 
-    function tearDown () {
+    function tearDown (cb) {
       for (var conn in connections) {
         if (connections[conn]) {
           connections[conn].end()
         }
       }
+      if (!server && cb) {
+        cb()
+        return
+      }
       if (server) {
+        if (cb) {
+          setImmediate(function () {
+            server.close(cb)
+          })
+          return
+        }
         server.close()
       }
     }
   }
 }
-

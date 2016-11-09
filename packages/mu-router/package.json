@@ -23,6 +23,7 @@
   "license": "MIT",
   "dependencies": {
     "bloomrun": "^2.3.0",
-    "fast-safe-stringify": "^1.1.1"
+    "fast-safe-stringify": "^1.1.1",
+    "fastparallel": "^2.3.0"
   }
 }

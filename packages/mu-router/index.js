@@ -17,6 +17,7 @@
 var bloomrun = require('bloomrun')
 var assert = require('assert')
 var stringify = require('fast-safe-stringify')
+var parallel = require('fastparallel')()
 
 /**
  * pattern router. responsible for the routing table
@@ -127,12 +128,19 @@ module.exports = function (opts) {
     }
   }
 
-  function tearDown () {
-    run.list().forEach(function (el) {
-      if (el.tearDown) {
-        el.tearDown()
-      }
-    })
+  function tearDown (cb) {
+    var list = run.list().map(function (el) {
+      return el.tearDown
+    }).filter(Boolean)
+    if (!list.length) {
+      if (cb) cb()
+      return
+    }
+    if (cb) {
+      parallel(null, list, null, cb)
+      return
+    }
+    list.forEach(function (tearDown) { tearDown() })
   }
 
   function transports () {

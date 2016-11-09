@@ -103,3 +103,10 @@ test('optional dispatch cb', function (t) {
   })
 })
 
+test('tearDown cb', function (t) {
+  t.plan(1)
+  createMu().tearDown(function () {
+    t.pass()
+  })
+})
+

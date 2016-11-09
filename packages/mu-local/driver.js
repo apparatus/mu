@@ -52,6 +52,8 @@ module.exports = function createFunctionDriver (options) {
       cb(null, message)
     }
 
-    function tearDown () {}
+    function tearDown (cb) {
+      if (cb) cb()
+    }
   }
 }
