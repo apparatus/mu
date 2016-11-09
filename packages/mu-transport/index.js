@@ -54,11 +54,10 @@ module.exports = function transport (createDriver, mu, opts) {
     msg.protocol.inboundIfc = muid
 
     mu.dispatch(msg, function (err, response) {
-      var packet
       var message = cloneDeep(msg)
       response = response || {}
-      if (err) { response.err = err }
-      packet = {
+      var packet = {
+        err: err,
         response: cloneDeep(response),
         protocol: message.protocol
       }

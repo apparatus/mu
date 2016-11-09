@@ -108,7 +108,7 @@ module.exports = function (opts) {
         // this will be the last step in the distributed call chain. Otherwise the message is being routed through a transport layer
         // so call the tf and invoke the local callback once the message has been sent
         if (idmap[muid].type === 'callback') {
-          idmap[muid].tf(mue.remote(message.response.err || null), message.response)
+          idmap[muid].tf(mue.remote(message.err || null), message.response)
         } else {
           idmap[muid].tf(message, function (err, response) {
             cb(mue.wrap(err), response)
