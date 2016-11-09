@@ -73,9 +73,9 @@ function createMu (opts) {
 
   function dispatch (message, cb) {
     var id = uuid()
-
+    cb = cb || noop
     assert(message, 'dispatch requires a valid message')
-    assert(typeof cb === 'function', 'dispatch requries a valid callback handler')
+    assert(typeof cb === 'function', 'dispatch requires a valid callback handler')
     logger.debug('dispatching message: ' + message)
 
     if (!(message.pattern || message.response)) {
@@ -87,6 +87,8 @@ function createMu (opts) {
     router.route(message, cb)
   }
 }
+
+function noop () {}
 
 createMu.log = Object.keys(pino.levels.values).reduce((acc, key) => {
   acc['level' + key[0].toUpperCase() + key.slice(1)] = key

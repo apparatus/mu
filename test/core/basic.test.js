@@ -89,3 +89,17 @@ test('multi-dispatch same cb', function (t) {
   mu.dispatch({role: 'test', cmd: 'one', id: 6}, handler)
 })
 
+test('optional dispatch cb', function (t) {
+  t.plan(2)
+
+  var mu = createMu()
+
+  mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
+    t.pass()
+  })
+
+  t.doesNotThrow(function () {
+    mu.dispatch({role: 'test', cmd: 'one'})
+  })
+})
+
