@@ -18,15 +18,15 @@ var transport = require('mu-transport')
 var tcpDriver = require('./driver')
 
 module.exports = {
-  server: function server (source) {
+  server: function server (source, ready) {
     return function driver (mu, opts) {
-      var drv = tcpDriver({source: source, id: opts.id})
+      var drv = tcpDriver({source: source, id: opts.id, ready: ready})
       return transport(drv, mu, opts)
     }
   },
-  client: function client (target) {
+  client: function client (target, ready) {
     return function driver (mu, opts) {
-      var drv = tcpDriver({target: target, id: opts.id})
+      var drv = tcpDriver({target: target, id: opts.id, ready: ready})
       return transport(drv, mu, opts)
     }
   }

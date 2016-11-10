@@ -52,7 +52,6 @@ test('multi-dispatch same cb', function (t) {
   var mu1 = createMu()
   var mu2 = createMu()
   mu1.inbound('*', tcp.server({port: 3003, host: '127.0.0.1'}))
-  mu2.inbound('*', tcp.server({port: 3004, host: '127.0.0.1'}))
   mu2.outbound({role: 'multi-dispatch-test'}, tcp.client({port: 3003, host: '127.0.0.1'}))
 
   var count = 0
@@ -80,3 +79,33 @@ test('multi-dispatch same cb', function (t) {
   mu2.dispatch({role: 'multi-dispatch-test', cmd: 'one', id: 6}, handler)
 })
 
+test('server/client ready cbs', function (t) {
+  t.plan(2)
+  var mu = createMu()
+  mu.inbound('*', tcp.server({port: 3003, host: '127.0.0.1'}, function () {
+    t.pass()
+    mu.tearDown()
+  }))
+
+  mu.outbound({some: 'pattern'}, tcp.client({port: 3003, host: '127.0.0.1'}, function () {
+    t.pass()
+  }))
+})
+
+test('tearDown cb', function (t) {
+  t.plan(2)
+
+  var mu1 = createMu()
+  var mu2 = createMu()
+  mu1.inbound('*', tcp.server({port: 3003, host: '127.0.0.1'}))
+  mu2.inbound('*', tcp.server({port: 3004, host: '127.0.0.1'}))
+  mu2.outbound({role: 'test'}, tcp.client({port: 3003, host: '127.0.0.1'}))
+
+  mu1.tearDown(function () {
+    t.pass()
+  })
+
+  mu2.tearDown(function () {
+    t.pass()
+  })
+})

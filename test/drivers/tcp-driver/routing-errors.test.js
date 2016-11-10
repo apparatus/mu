@@ -17,6 +17,7 @@
 var test = require('tap').test
 var createMu = require('../../../packages/mu')
 var tcp = require('../../../packages/mu-tcp')
+var NO_AVAILABLE_TRANSPORT = 'Routing error: no available response transport function'
 
 var s1 = createMu()
 
@@ -35,7 +36,7 @@ test('test no service', function (t) {
   mu.dispatch({role: 's1', cmd: 'one'}, function (err, result) {
     t.equal(err, null)
     mu.dispatch({wibble: 'fish'}, function (err, result) {
-      t.equal(err.message, 'Routing error no matching route and no default route provided, Message will be discarded')
+      t.equal(err.message, NO_AVAILABLE_TRANSPORT)
       s1.tearDown()
       mu.tearDown()
     })

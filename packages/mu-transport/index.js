@@ -54,11 +54,10 @@ module.exports = function transport (createDriver, mu, opts) {
     msg.protocol.inboundIfc = muid
 
     mu.dispatch(msg, function (err, response) {
-      var packet
       var message = cloneDeep(msg)
       response = response || {}
-      if (err) { response.err = err }
-      packet = {
+      var packet = {
+        err: err,
         response: cloneDeep(response),
         protocol: message.protocol
       }
@@ -66,9 +65,7 @@ module.exports = function transport (createDriver, mu, opts) {
       packet.protocol.src = muid
       packet.protocol.dst = packet.protocol.path.pop()
       logger.debug({out: packet}, 'sending response')
-      driver.send(packet, function (err) {
-        if (err) { logger.error(err) }
-      })
+      driver.send(packet)
     })
   }
 

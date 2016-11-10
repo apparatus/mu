@@ -36,8 +36,12 @@ module.exports = function createTcpDriver (options) {
     assert(opts, 'transport should always pass opts to tcpDriver')
     assert(receive instanceof Function, 'transport should always pass receive function to tcpDriver')
 
-    var server = options.source && options.source.host &&
-      options.source.port && listen()
+    var server = options.source &&
+      listen(options.source.port, options.source.host, options.ready)
+
+    if (!server && options.ready instanceof Function) {
+      options.ready()
+    }
 
     return {
       type: 'tcp',
@@ -46,10 +50,11 @@ module.exports = function createTcpDriver (options) {
     }
 
     function send (message, cb) {
+      var err = null
       if (!connections[message.protocol.dst]) {
         var socket = net.createConnection(options.target.port, options.target.host)
         connections[message.protocol.dst] = nos(socket, {codec: codec(socket)})
-
+        connections[message.protocol.dst].socket = socket
         connections[message.protocol.dst].on('data', function (data) {
           if (data instanceof Error) {
             receive(data)
@@ -59,17 +64,21 @@ module.exports = function createTcpDriver (options) {
           receive(null, data)
         })
 
-        socket.on('error', function (err) { cb(mue.transport(err)) })
-
+        socket.on('error', function (err) { receive(mue.transport(err)) })
+        socket.once('error', function (error) {
+          err = error
+        })
         eos(connections[message.protocol.dst], function () {
           connections[message.protocol.dst] = null
         })
       }
 
-      connections[message.protocol.dst].write(message)
+      connections[message.protocol.dst].write(message, cb && function () {
+        setImmediate(function () { cb(err) })
+      })
     }
 
-    function listen () {
+    function listen (port, host, ready) {
       return net.createServer(function (socket) {
         socket = nos(socket, {codec: codec(socket)})
 
@@ -93,7 +102,7 @@ module.exports = function createTcpDriver (options) {
           connectionsByIp[socket.remoteAddress + '_' + socket.remotePort] = null
           if (err) { receive(mue.transport(err)) }
         })
-      }).listen(options.source.port, options.source.host)
+      }).listen(port, host, ready)
     }
 
     function codec () {
@@ -109,16 +118,25 @@ module.exports = function createTcpDriver (options) {
       }
     }
 
-    function tearDown () {
+    function tearDown (cb) {
       for (var conn in connections) {
         if (connections[conn]) {
           connections[conn].end()
         }
       }
+      if (!server && cb) {
+        cb()
+        return
+      }
       if (server) {
+        if (cb) {
+          setImmediate(function () {
+            server.close(cb)
+          })
+          return
+        }
         server.close()
       }
     }
   }
 }
-

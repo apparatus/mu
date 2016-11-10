@@ -89,3 +89,36 @@ test('multi-dispatch same cb', function (t) {
   mu.dispatch({role: 'test', cmd: 'one', id: 6}, handler)
 })
 
+test('optional dispatch cb', function (t) {
+  t.plan(2)
+
+  var mu = createMu()
+
+  mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
+    t.pass()
+    cb()
+  })
+
+  t.doesNotThrow(function () {
+    mu.dispatch({role: 'test', cmd: 'one'})
+  })
+})
+
+test('tearDown cb', function (t) {
+  t.plan(1)
+  createMu().tearDown(function () {
+    t.pass()
+  })
+})
+
+test('bogus string route', function (t) {
+  t.plan(1)
+  var mu = createMu()
+
+  t.doesNotThrow(function () {
+    mu.define('test', function (args, cb) {
+      t.fail()
+      // nothing should happen here
+    })
+  })
+})
