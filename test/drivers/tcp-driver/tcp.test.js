@@ -99,6 +99,7 @@ test('tearDown cb', function (t) {
   var mu2 = createMu()
   mu1.inbound('*', tcp.server({port: 3003, host: '127.0.0.1'}))
   mu2.inbound('*', tcp.server({port: 3004, host: '127.0.0.1'}))
+  mu2.outbound({role: 'test'}, tcp.client({port: 3003, host: '127.0.0.1'}))
 
   mu1.tearDown(function () {
     t.pass()

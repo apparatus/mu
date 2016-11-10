@@ -3,6 +3,9 @@
   "version": "1.0.2",
   "description": "The official pattern router for mu",
   "main": "index.js",
+  "scripts": {
+    "test": "tap test"
+  },
   "keywords": [
     "mu",
     "microservices",
@@ -21,6 +24,11 @@
     "Matteo Collina (https://github.com/mcollina)"
   ],
   "license": "MIT",
+  "devDependencies": {
+    "abstract-logging": "^1.0.0",
+    "mu-error": "^1.4.4",
+    "tap": "^8.0.0"
+  },
   "dependencies": {
     "bloomrun": "^2.3.0",
     "fast-safe-stringify": "^1.1.1",

@@ -65,9 +65,7 @@ module.exports = function transport (createDriver, mu, opts) {
       packet.protocol.src = muid
       packet.protocol.dst = packet.protocol.path.pop()
       logger.debug({out: packet}, 'sending response')
-      driver.send(packet, function (err) {
-        if (err) { logger.error(err) }
-      })
+      driver.send(packet)
     })
   }
 

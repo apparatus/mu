@@ -13,6 +13,8 @@
  */
 
 'use strict'
+var assert = require('assert')
+
 var register = {}
 
 /**
@@ -20,8 +22,8 @@ var register = {}
  * uses a singleton transport registry to connect to in
  * process mu instances
  */
-module.exports = function createFunctionDriver (options) {
-  return function functionDriver (opts, cb) {
+module.exports = function createLocalDriver (options) {
+  return function localDriver (opts, receive) {
     var target = options && options.target &&
       options.target.transports().filter(function (transport) {
         return (transport.driver &&
@@ -29,7 +31,9 @@ module.exports = function createFunctionDriver (options) {
       })
     target = target && target[target.length - 1].driver
 
-    opts = opts || {}
+    assert(opts, 'transport should always pass opts to localDriver')
+    assert(receive instanceof Function, 'transport should always pass receive function to localDriver')
+
     var id = opts.id
 
     register[id] = {
@@ -49,7 +53,7 @@ module.exports = function createFunctionDriver (options) {
     }
 
     function call (message) {
-      cb(null, message)
+      receive(null, message)
     }
 
     function tearDown (cb) {

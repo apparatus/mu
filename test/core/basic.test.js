@@ -96,6 +96,7 @@ test('optional dispatch cb', function (t) {
 
   mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
     t.pass()
+    cb()
   })
 
   t.doesNotThrow(function () {
@@ -110,3 +111,14 @@ test('tearDown cb', function (t) {
   })
 })
 
+test('bogus string route', function (t) {
+  t.plan(1)
+  var mu = createMu()
+
+  t.doesNotThrow(function () {
+    mu.define('test', function (args, cb) {
+      t.fail()
+      // nothing should happen here
+    })
+  })
+})
