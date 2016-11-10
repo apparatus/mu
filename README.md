@@ -3,7 +3,6 @@
 [![npm][npm-badge]][npm-url]
 [![travis][travis-badge]][travis-url]
 [![coveralls][coveralls-badge]][coveralls-url]
-[![david][david-badge]][david-url]
 
 - __Sponsor:__ [nearForm][sponsor]
 - __Status:__ Experimental
@@ -69,19 +68,37 @@ mu.dispatch({role: 'some', cmd: 'thing', user: 'me :)'}, function (err, result) 
 
 ## API
 
-* [Core][mu]
-* [Error handling][mu-error]
+* [Core][mu-api]
+* [Error handling][mu-error-api]
 * Transports
-  * [mu-local][]
-  * [mu-tcp][]
-  * [mu-http][] **(PLACEHOLDER - TODO)**
-  * [mu-redis][]
+  * [`mu-local`][mu-local-api]
+  * [`mu-tcp`][mu-tcp-api]
+  * [`mu-http`][mu-http-api] **(PLACEHOLDER - TODO)**
+  * [`mu-redis`][mu-redis-api]
 * Adapters
-  * [mu-balancer][]
-  * [mu-tee][]
+  * [`mu-balance`][mu-balance-api]
+  * [`mu-tee`][mu-tee-api]
 * Internals
-  * [mu-router][]
-  * [mu-transport][]
+  * [`mu-router`][mu-router-api]
+  * [`mu-transport`][mu-transport-api]
+
+## Packages
+
+The `mu` repo is managed as a monorepo, composed of multiple npm packages.
+
+| Package | Version | Dependencies |
+|--------|-------|------------|
+| [`mu`][] | [![npm](https://img.shields.io/npm/v/mu.svg?maxAge=2592000)](https://www.npmjs.com/package/mu) | [![Dependency Status](https://david-dm.org/apparatus/mu.svg?path=packages/mu)](https://david-dm.org/apparatus/mu?path=packages/mu) |
+| [`mu-error`][] | [![npm](https://img.shields.io/npm/v/mu-error.svg?maxAge=2592000)](https://www.npmjs.com/package/mu-error) | [![Dependency Status](https://david-dm.org/apparatus/mu.svg?path=packages/mu-error)](https://david-dm.org/apparatus/mu?path=packages/mu-error) |
+| [`mu-local`][] | [![npm](https://img.shields.io/npm/v/mu-local.svg?maxAge=2592000)](https://www.npmjs.com/package/mu-local) | [![Dependency Status](https://david-dm.org/apparatus/mu.svg?path=packages/mu-local)](https://david-dm.org/apparatus/mu?path=packages/mu-local) |
+| [`mu-tcp`][] | [![npm](https://img.shields.io/npm/v/mu-tcp.svg?maxAge=2592000)](https://www.npmjs.com/package/mu-tcp) | [![Dependency Status](https://david-dm.org/apparatus/mu.svg?path=packages/mu-tcp)](https://david-dm.org/apparatus/mu?path=packages/mu-tcp) |
+| [`mu-http`][] | N/A | [![Dependency Status](https://david-dm.org/apparatus/mu.svg?path=packages/mu-http)](https://david-dm.org/apparatus/mu?path=packages/mu-http) |
+| [`mu-redis`][] | [![npm](https://img.shields.io/npm/v/mu-redis.svg?maxAge=2592000)](https://www.npmjs.com/package/mu-redis) | [![Dependency Status](https://david-dm.org/apparatus/mu.svg?path=packages/mu-redis)](https://david-dm.org/apparatus/mu?path=packages/mu-redis) |
+| [`mu-balance`][] | [![npm](https://img.shields.io/npm/v/mu-balance.svg?maxAge=2592000)](https://www.npmjs.com/package/mu-balance) | [![Dependency Status](https://david-dm.org/apparatus/mu.svg?path=packages/mu-balance)](https://david-dm.org/apparatus/mu?path=packages/mu-balance) |
+| [`mu-tee`][] | [![npm](https://img.shields.io/npm/v/mu-tee.svg?maxAge=2592000)](https://www.npmjs.com/package/mu-tee) | [![Dependency Status](https://david-dm.org/apparatus/mu.svg?path=packages/mu-tee)](https://david-dm.org/apparatus/mu?path=packages/mu-tee) |
+| [`mu-router`][] | [![npm](https://img.shields.io/npm/v/mu-router.svg?maxAge=2592000)](https://www.npmjs.com/package/mu-router) | [![Dependency Status](https://david-dm.org/apparatus/mu.svg?path=packages/mu-router)](https://david-dm.org/apparatus/mu?path=packages/mu-router) |
+| [`mu-transport`][] | [![npm](https://img.shields.io/npm/v/mu-transport.svg?maxAge=2592000)](https://www.npmjs.com/package/mu-transport) | [![Dependency Status](https://david-dm.org/apparatus/mu.svg?path=packages/mu-transport)](https://david-dm.org/apparatus/mu?path=packages/mu-transport) |
+
 
 ## Development
 
@@ -155,16 +172,26 @@ This runs the [lerna publish](https://lernajs.io/#command-publish) command, whic
 ## License
 Copyright Peter Elger 2016 & Contributors, Licensed under [MIT][].
 
-[mu]: packages/mu
-[mu-error]: packages/mu-error
-[mu-local]: packages/mu-local
-[mu-tcp]: packages/mu-tcp
-[mu-http]: packages/mu-http
-[mu-redis]: packages/mu-redis
-[mu-balancer]: packages/mu-balancer
-[mu-tee]: packages/mu-tee
-[mu-router]: packages/mu-router
-[mu-transport]: packages/mu-transport
+[`mu`]: packages/mu
+[`mu-error`]: packages/mu-error
+[`mu-local`]: packages/mu-local
+[`mu-tcp`]: packages/mu-tcp
+[`mu-http`]: packages/mu-http
+[`mu-redis`]: packages/mu-redis
+[`mu-balance`]: packages/mu-balance
+[`mu-tee`]: packages/mu-tee
+[`mu-router`]: packages/mu-router
+[`mu-transport`]: packages/mu-transport#api
+[mu-api]: packages/mu
+[mu-error-api]: packages/mu-error#api
+[mu-local-api]: packages/mu-local#api
+[mu-tcp-api]: packages/mu-tcp#api
+[mu-http-api]: packages/mu-http#api
+[mu-redis-api]: packages/mu-redis#api
+[mu-balance-api]: packages/mu-balance#api
+[mu-tee-api]: packages/mu-tee#api
+[mu-router-api]: packages/mu-router#api
+[mu-transport-api]: packages/mu-transport#api
 [travis-badge]: https://travis-ci.org/apparatus/mu.svg?branch=master
 [travis-url]: https://travis-ci.org/apparatus/mu
 [npm-badge]: https://badge.fury.io/js/mu.svg
@@ -172,7 +199,5 @@ Copyright Peter Elger 2016 & Contributors, Licensed under [MIT][].
 [logo-url]: https://raw.githubusercontent.com/apparatus/mu/master/assets/mu.png
 [coveralls-badge]: https://coveralls.io/repos/apparatus/mu/badge.svg?branch=master
 [coveralls-url]: https://coveralls.io/github/apparatus/mu?branch=master
-[david-badge]: https://david-dm.org/apparatus/mu.svg
-[david-url]: https://david-dm.org/apparatus/mu
 [sponsor]: http://nearform.com
 [MIT]: ./LICENSE

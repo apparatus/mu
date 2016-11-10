@@ -282,6 +282,6 @@ Copyright David Mark Clements & Contributors, Licensed under [MIT][].
 [coveralls-badge]: https://coveralls.io/repos/apparatus/mu/badge.svg?branch=master
 [coveralls-url]: https://coveralls.io/github/apparatus/mu?branch=master
 [david-badge]: https://david-dm.org/apparatus/mu.svg
-[david-url]: https://david-dm.org/apparatus/mu
+[david-url]: https://david-dm.org/apparatus/mu?path=packages/mu-error
 [sponsor]: http://nearform.com
 [MIT]: ./LICENSE

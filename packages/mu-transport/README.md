@@ -42,6 +42,6 @@ Copyright Peter Elger 2016 & Contributors, Licensed under [MIT][].
 [coveralls-badge]: https://coveralls.io/repos/apparatus/mu/badge.svg?branch=master
 [coveralls-url]: https://coveralls.io/github/apparatus/mu?branch=master
 [david-badge]: https://david-dm.org/apparatus/mu.svg
-[david-url]: https://david-dm.org/apparatus/mu
+[david-url]: https://david-dm.org/apparatus/mu?path=packages/mu-transport
 [sponsor]: http://nearform.com
 [MIT]: ./LICENSE
