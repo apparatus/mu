@@ -1,6 +1,6 @@
 {
   "name": "mu-router",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "The official pattern router for mu",
   "main": "index.js",
   "scripts": {
@@ -26,7 +26,7 @@
   "license": "MIT",
   "devDependencies": {
     "abstract-logging": "^1.0.0",
-    "mu-error": "^1.4.4",
+    "mu-error": "^1.4.5",
     "tap": "^8.0.0"
   },
   "dependencies": {

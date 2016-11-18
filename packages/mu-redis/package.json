@@ -1,6 +1,6 @@
 {
   "name": "mu-redis",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "The official Redis transport driver for mu",
   "main": "index.js",
   "keywords": [
@@ -24,7 +24,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "mu-transport": "^1.0.3",
+    "mu-transport": "^1.0.4",
     "fast-safe-stringify": "^1.1.1"
   }
 }
