@@ -22,7 +22,7 @@
     "node": ">=4.0.0"
   },
   "scripts": {
-    "setup": "lerna bootstrap && npm i",
+    "setup": "npm i && lerna bootstrap",
     "clean": "lerna clean",
     "release": "lerna publish -i",
     "lint": "echo 'linting...' && spacey-standard | snazzy",
