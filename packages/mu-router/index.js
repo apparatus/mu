@@ -133,12 +133,11 @@ module.exports = function (opts) {
     // response parameters back to the callback handler. This will either be local in the case of a single
     // process instance or more likely in transport.js. This will pack the error and response paramters into
     // a protocol packet send
-
     if (match.type === 'handler') {
       logger.debug(message, 'handling message')
-      match.tf(message, function (err, response) {
-        cb(mue.wrap(err || null), response || {})
-      })
+      match.tf(message.pattern, function (err, response) {
+        cb(mue.wrap(err || null), response || {}, message)
+      }, message)
       return
     }
 
@@ -184,7 +183,7 @@ module.exports = function (opts) {
     // this will be the last step in the distributed call chain. Otherwise the message is being routed through a transport layer
     // so call the tf and invoke the local callback once the message has been sent
     if (match.type === 'callback') {
-      match.tf(mue.remote(message.err || null), message.response)
+      match.tf(mue.remote(message.err || null), message.response, message)
       return
     }
 
