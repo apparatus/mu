@@ -34,7 +34,7 @@ test('test forced error on response', function (t) {
 
   init(function (s1) {
     mu.outbound({role: 's1'}, local({target: s1}))
-    mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
+    mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function () {
       s1.tearDown()
       mu.tearDown()
     })
