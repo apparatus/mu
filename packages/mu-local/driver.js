@@ -15,11 +15,8 @@
 'use strict'
 
 var assert = require('assert')
-var mue = require('mu-error')()
 
 var register = {}
-var ERROR_ON_SEND = false
-var count = 0
 
 /**
  * local function transport.
@@ -52,12 +49,6 @@ module.exports = function createLocalDriver (options) {
     return register[id]
 
     function send (message, cb) {
-      if (ERROR_ON_SEND) {
-        if (count === 1) {
-          return cb(mue.transport(new Error('FORCED ERROR')))
-        }
-        count++
-      }
       var tx = message.protocol.dst === 'target'
         ? target
         : register[message.protocol.dst]
@@ -73,6 +64,4 @@ module.exports = function createLocalDriver (options) {
     }
   }
 }
-
-module.exports.forceError = function forceError () { ERROR_ON_SEND = true }
 

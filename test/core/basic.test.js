@@ -46,31 +46,38 @@ test('local handler test', function (t) {
 })
 
 test('full message test', function (t) {
-  t.plan(8)
+  t.plan(16)
 
   var mu = createMu({ logLevel: createMu.log.levelInfo })
 
-  mu.define({role: 'test', cmd: 'one'}, function (args, cb, msg) {
-    t.deepEqual(msg.pattern, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
+  mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
+    t.deepEqual(args, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
+    t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
+    t.equal(args, args.pattern)
+    t.ok(args.protocol)
     cb()
   })
 
-  mu.define({role: 'test', cmd: 'two'}, function (args, cb, msg) {
-    t.deepEqual(msg.pattern, { role: 'test', cmd: 'two', fish: 'cheese' }, 'check pattern cmd two')
+  mu.define({role: 'test', cmd: 'two'}, function (args, cb) {
+    t.deepEqual(args, { role: 'test', cmd: 'two', fish: 'cheese' }, 'check pattern cmd two')
+    t.deepEqual(args.pattern, { role: 'test', cmd: 'two', fish: 'cheese' }, 'check pattern cmd two')
+    t.equal(args, args.pattern)
+    t.ok(args.protocol)
     cb(null, {my: 'response'})
   })
 
-  mu.dispatch({role: 'test', cmd: 'one', fish: 'cheese'}, function (err, result, msg) {
+  mu.dispatch({role: 'test', cmd: 'one', fish: 'cheese'}, function (err, result) {
     t.equal(null, err, 'check err is null')
-    console.log('----------> ', msg)
     t.deepEqual({}, result, 'check result is empty')
-    t.notEqual(null, msg)
+    t.ok(result.protocol)
+    t.ok(result.response)
   })
 
-  mu.dispatch({role: 'test', cmd: 'two', fish: 'cheese'}, function (err, result, msg) {
+  mu.dispatch({role: 'test', cmd: 'two', fish: 'cheese'}, function (err, result) {
     t.equal(null, err, 'check err is null')
     t.deepEqual({my: 'response'}, result, 'check result')
-    t.notEqual(null, msg)
+    t.ok(result.protocol)
+    t.ok(result.response)
   })
 })
 

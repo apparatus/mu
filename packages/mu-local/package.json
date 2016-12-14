@@ -23,8 +23,7 @@
     "Matteo Collina (https://github.com/mcollina)"
   ],
   "dependencies": {
-    "mu-transport": "^1.0.4",
-    "mu-error": "^1.4.5"
+    "mu-transport": "^1.0.4"
   },
   "license": "MIT"
 }
