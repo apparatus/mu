@@ -18,18 +18,19 @@ var test = require('tap').test
 var createMu = require('../../packages/mu')
 var local = require('../../packages/mu-local')
 
+
 test('local handler test', function (t) {
   t.plan(6)
 
   var mu = createMu({ logLevel: createMu.log.levelInfo })
 
   mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
-    t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
+    t.deepEqual(args, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
     cb()
   })
 
   mu.define({role: 'test', cmd: 'two'}, function (args, cb) {
-    t.deepEqual(args.pattern, { role: 'test', cmd: 'two', fish: 'cheese' }, 'check pattern cmd two')
+    t.deepEqual(args, { role: 'test', cmd: 'two', fish: 'cheese' }, 'check pattern cmd two')
     cb(null, {my: 'response'})
   })
 
@@ -44,6 +45,36 @@ test('local handler test', function (t) {
   })
 })
 
+
+test('full message test', function (t) {
+  t.plan(9)
+
+  var mu = createMu({ logLevel: createMu.log.levelInfo })
+
+  mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
+    t.deepEqual(args, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
+    cb()
+  })
+
+  mu.define({role: 'test', cmd: 'two'}, function (args, cb, msg) {
+    t.deepEqual(args, { role: 'test', cmd: 'two', fish: 'cheese' }, 'check pattern cmd two')
+    t.ok(msg.protocol)
+    cb(null, {my: 'response'})
+  })
+
+  mu.dispatch({role: 'test', cmd: 'one', fish: 'cheese'}, function (err, result, msg) {
+    t.equal(null, err, 'check err is null')
+    t.deepEqual({}, result, 'check result is empty')
+    t.ok(msg.protocol)
+  })
+
+  mu.dispatch({role: 'test', cmd: 'two', fish: 'cheese'}, function (err, result, msg) {
+    t.equal(null, err, 'check err is null')
+    t.deepEqual({my: 'response'}, result, 'check result')
+    t.ok(msg.protocol)
+  })
+})
+
 test('route print test', function (t) {
   t.plan(2)
 
@@ -51,12 +82,12 @@ test('route print test', function (t) {
   mu.inbound('*', local())
 
   mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
-    t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
+    t.deepEqual(args, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
     cb()
   })
 
   mu.define({role: 'test', cmd: 'two'}, function (args, cb) {
-    t.deepEqual(args.pattern, { role: 'test', cmd: 'two', fish: 'cheese' }, 'check pattern cms two')
+    t.deepEqual(args, { role: 'test', cmd: 'two', fish: 'cheese' }, 'check pattern cms two')
     cb(null, {my: 'response'})
   })
 
@@ -72,7 +103,7 @@ test('multi-dispatch same cb', function (t) {
   var count = 0
   var total = 0
   mu.define({role: 'test', cmd: 'one'}, function (args, cb) {
-    cb(null, {count: ++count, id: args.pattern.id})
+    cb(null, {count: ++count, id: args.id})
   })
 
   function handler (err, result) {
@@ -122,3 +153,4 @@ test('bogus string route', function (t) {
     })
   })
 })
+

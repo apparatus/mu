@@ -25,5 +25,9 @@
   "dependencies": {
     "lodash.clonedeep": "^4.5.0",
     "uuid": "^3.0.0"
+  },
+  "devDependencies": {
+    "abstract-logging": "^1.0.0",
+    "mu": "^2.0.5"
   }
 }

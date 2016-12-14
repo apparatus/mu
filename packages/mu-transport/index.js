@@ -42,6 +42,7 @@ module.exports = function transport (createDriver, mu, opts) {
   function receive (err, msg) {
     logger.debug({in: msg}, 'message received')
     if (err) {
+
       // received an error condition from the driver,
       // typically this signals a failed client connection
       // or other inbound connection error condition.
@@ -52,7 +53,6 @@ module.exports = function transport (createDriver, mu, opts) {
     }
 
     msg.protocol.inboundIfc = muid
-
     mu.dispatch(msg, function (err, response) {
       var message = cloneDeep(msg)
       response = response || {}
@@ -65,7 +65,12 @@ module.exports = function transport (createDriver, mu, opts) {
       packet.protocol.src = muid
       packet.protocol.dst = packet.protocol.path.pop()
       logger.debug({out: packet}, 'sending response')
-      driver.send(packet)
+
+      driver.send(packet, function (err) {
+        if (err) {
+          logger.error({ err: err, out: packet })
+        }
+      })
     })
   }
 

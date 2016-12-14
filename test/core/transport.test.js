@@ -24,12 +24,12 @@ test('local inbound/outbound test', function (t) {
   // service
   var mus = createMu()
   mus.define({role: 'test', cmd: 'one'}, function (args, cb) {
-    t.deepEqual(args.pattern, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
+    t.deepEqual(args, { role: 'test', cmd: 'one', fish: 'cheese' }, 'check pattern cmd one')
     cb()
   })
 
   mus.define({role: 'test', cmd: 'two'}, function (args, cb) {
-    t.deepEqual(args.pattern, { role: 'test', cmd: 'two', fish: 'cheese' }, 'check pattern cmd two')
+    t.deepEqual(args, { role: 'test', cmd: 'two', fish: 'cheese' }, 'check pattern cmd two')
     cb(null, {my: 'response'})
   })
   mus.inbound('*', local())

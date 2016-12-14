@@ -57,7 +57,7 @@ test('multi-dispatch same cb', function (t) {
   var count = 0
   var total = 0
   mu1.define({role: 'multi-dispatch-test', cmd: 'one'}, function (args, cb) {
-    cb(null, {count: ++count, id: args.pattern.id})
+    cb(null, {count: ++count, id: args.id})
   })
 
   function handler (err, result) {
@@ -109,3 +109,4 @@ test('tearDown cb', function (t) {
     t.pass()
   })
 })
+
