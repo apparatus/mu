@@ -47,16 +47,19 @@ module.exports = function createTcpDriver (options) {
           sendTo.response.write(stringify(message))
           sendTo.response.end()
         } else {
-          cb && cb(mue.transport('connection has alredy recieved response!'))
+          cb(mue.transport('connection has alredy recieved response!'))
         }
       } else {
 
         // client initiating connection to server
         var body = []
         var inbound
+
+        // TODO use http agent
         var req = http.request({host: options.target.host,
                                 port: options.target.port,
                                 method: 'POST',
+            // TODO make /mu/
                                 path: '/',
                                 headers: {'Content-Type': 'application/json'}})
 
@@ -130,6 +133,7 @@ module.exports = function createTcpDriver (options) {
       }
       if (server) {
         if (cb) {
+          // TODO remove this
           setImmediate(function () {
             server.close(cb)
           })
