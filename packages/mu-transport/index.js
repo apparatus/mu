@@ -18,6 +18,7 @@ var assert = require('assert')
 var uuid = require('uuid')
 var cloneDeep = require('lodash.clonedeep')
 
+
 /**
  * responsible for the protocol implementation
  *  {pattern: { pattern and data }, proto: { path: [1234, 4567], trace: [1234, 4567], ttl: 9}}
@@ -39,16 +40,43 @@ module.exports = function transport (createDriver, mu, opts) {
     tearDown: driver.tearDown
   }
 
+
+
+  function constructFailResponse (err, msg) {
+    var pkt = { err: err,
+                response: {},
+                protocol: {}}
+    var elt = muid
+
+    if (msg.protocol && msg.protocol.path && msg.protocol.path.length && msg.protocol.path.length > 0) {
+      elt = msg.protocol.path[msg.protocol.path.length - 1]
+      pkt.protocol.path = msg.protocol.path.slice(0, msg.protocol.path.length - 1)
+    }
+    if (msg.protocol && msg.protocol.trace) {
+      pkt.protocol.trace = cloneDeep(msg.protocol.trace)
+    }
+    pkt.protocol.dst = elt
+    pkt.protocol.src = elt
+    pkt.protocol.inboundIfc = elt
+    return pkt
+  }
+
+
+
   function receive (err, msg) {
     logger.debug({in: msg}, 'message received')
     if (err) {
-      // received an error condition from the driver,
-      // typically this signals a failed client connection
-      // or other inbound connection error condition.
-      // In this case, log the error but make no attempt at
-      // further routing
+
+      // received an error condition from the driver, typically this signals a failed client connection
+      // or other inbound connection error condition. In this case, log the error but make no attempt at
+      // further routing unless we have an associated msg - the associated message will be used to construct
+      // an error response if present
       logger.error(err)
-      return
+      if (!msg || !msg.protocol) {
+        return
+      } else {
+        msg = constructFailResponse(err, msg)
+      }
     }
 
     msg.protocol.inboundIfc = muid
@@ -68,6 +96,8 @@ module.exports = function transport (createDriver, mu, opts) {
       driver.send(packet)
     })
   }
+
+
 
   function tf (msg, cb) {
     assert(msg)

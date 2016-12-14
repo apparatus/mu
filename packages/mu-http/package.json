@@ -23,5 +23,11 @@
     "Dean McDonnell (https://github.com/mcdonnelldean)",
     "Matteo Collina (https://github.com/mcollina)"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "fast-json-parse": "^1.0.2",
+    "fast-safe-stringify": "^1.1.1",
+    "mu-error": "^1.4.5",
+    "mu-transport": "^1.0.4"
+  }
 }

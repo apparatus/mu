@@ -5,7 +5,7 @@
  * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
  * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * SERVICES LOSS OF USE, DATA, OR PROFITS OR BUSINESS INTERRUPTION)
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
@@ -14,32 +14,21 @@
 
 'use strict'
 
-var mu = require('../../../packages/mu')()
+var transport = require('mu-transport')
+var httpDriver = require('./driver')
 
-module.exports = function (expectCount) {
-  function consumeZero (cb) {
-    mu.dispatch({role: 'zero', cmd: 'one'}, function () {
-      cb(false)
-    })
-    setTimeout(function () {
-      cb(true)
-    }, 1000)
-  }
-
-  function consumeMulti (cb) {
-    var count = 0
-    mu.dispatch({role: 'multi', cmd: 'one'}, function () {
-      count = count + 1
-      if (count === expectCount) {
-        cb(count)
-      }
-    })
-  }
-
-  return {
-    mu: mu,
-    consumeZero: consumeZero,
-    consumeMulti: consumeMulti
+module.exports = {
+  server: function server (source, ready) {
+    return function driver (mu, opts) {
+      var drv = httpDriver({source: source, id: opts.id, ready: ready})
+      return transport(drv, mu, opts)
+    }
+  },
+  client: function client (target, ready) {
+    return function driver (mu, opts) {
+      var drv = httpDriver({target: target, id: opts.id, ready: ready})
+      return transport(drv, mu, opts)
+    }
   }
 }
 
