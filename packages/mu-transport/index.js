@@ -48,13 +48,17 @@ module.exports = function transport (createDriver, mu, opts) {
                 protocol: {}}
     var elt = muid
 
+    /* istanbul ignore else  */
     if (msg.protocol && msg.protocol.path && msg.protocol.path.length && msg.protocol.path.length > 0) {
       elt = msg.protocol.path[msg.protocol.path.length - 1]
       pkt.protocol.path = msg.protocol.path.slice(0, msg.protocol.path.length - 1)
     }
+
+    /* istanbul ignore else  */
     if (msg.protocol && msg.protocol.trace) {
       pkt.protocol.trace = cloneDeep(msg.protocol.trace)
     }
+
     pkt.protocol.dst = elt
     pkt.protocol.src = elt
     pkt.protocol.inboundIfc = elt
@@ -80,7 +84,6 @@ module.exports = function transport (createDriver, mu, opts) {
     }
 
     msg.protocol.inboundIfc = muid
-
     mu.dispatch(msg, function (err, response) {
       var message = cloneDeep(msg)
       response = response || {}
@@ -93,7 +96,12 @@ module.exports = function transport (createDriver, mu, opts) {
       packet.protocol.src = muid
       packet.protocol.dst = packet.protocol.path.pop()
       logger.debug({out: packet}, 'sending response')
-      driver.send(packet)
+
+      driver.send(packet, function (err) {
+        if (err) {
+          logger.error({ err: err, out: packet })
+        }
+      })
     })
   }
 

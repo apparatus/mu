@@ -72,9 +72,7 @@ module.exports = function createTcpDriver (options) {
             }
 
             inbound = parse(Buffer.concat(body))
-            if (!inbound.err) {
-              receive(inbound.err, inbound.value)
-            }
+            receive(inbound.err, inbound.value)
           })
         })
 
@@ -103,18 +101,13 @@ module.exports = function createTcpDriver (options) {
         request.on('end', function () {
           inbound = parse(Buffer.concat(body))
 
-          if (!inbound.err) {
-            if (!connections[inbound.value.protocol.src]) {
-              connections[inbound.value.protocol.src] = []
-              connectionsByIp[request.socket.remoteAddress + '_' + request.socket.remotePort] = []
-            }
-            connections[inbound.value.protocol.src].push({request: request, response: response})
-            connectionsByIp[request.socket.remoteAddress + '_' + request.socket.remotePort] = inbound.value.protocol.src
+          if (!connections[inbound.value.protocol.src]) {
+            connections[inbound.value.protocol.src] = []
+            connectionsByIp[request.socket.remoteAddress + '_' + request.socket.remotePort] = []
           }
+          connections[inbound.value.protocol.src].push({request: request, response: response})
+          connectionsByIp[request.socket.remoteAddress + '_' + request.socket.remotePort] = inbound.value.protocol.src
           receive(inbound.err, inbound.value)
-        })
-
-        request.on('close', function () {
         })
       })
 
