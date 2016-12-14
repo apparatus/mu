@@ -115,11 +115,9 @@ module.exports = function (opts) {
   }
 
   function pattern (message, cb) {
+
     // we are routing an outbound message as there is a pattern attached to the message
-    var pattern = message.pattern
-    var match = run.lookup(pattern)
-    Object.defineProperty(pattern, 'protocol', {value: message.protocol})
-    Object.defineProperty(pattern, 'pattern', {value: pattern})
+    var match = run.lookup(message.pattern)
 
     if (!match) {
       // unable to find a route, discard message
@@ -138,16 +136,12 @@ module.exports = function (opts) {
     // a protocol packet send
     if (match.type === 'handler') {
       logger.debug(message, 'handling message')
-      match.tf(pattern, function (err, response) {
-        response = response || {}
-        Object.defineProperty(response, 'protocol', {value: message.protocol})
-        Object.defineProperty(response, 'response', {value: response})
-        cb(mue.wrap(err || null), response)
-      })
+      match.tf(message.pattern, function (err, response) {
+        cb(mue.wrap(err || null), response || {}, message)
+      }, message)
+
       return
     }
-
-    // main case: type === 'transport':
 
     // update the response routing information
     var muid = message.protocol.path[message.protocol.path.length - 1]
@@ -179,6 +173,7 @@ module.exports = function (opts) {
     var muid = message.protocol.path[message.protocol.path.length - 1]
     var match = idmap[muid]
     if (!match) {
+
       // there is no available transport or handler for this mu id, this should never happen, discard the packet...
       logger.error(NO_MATCHING_ROUTE)
       cb(mue.framework(NO_MATCHING_ROUTE, message))
@@ -189,7 +184,7 @@ module.exports = function (opts) {
     // this will be the last step in the distributed call chain. Otherwise the message is being routed through a transport layer
     // so call the tf and invoke the local callback once the message has been sent
     if (match.type === 'callback') {
-      match.tf(mue.remote(message.err || null), message.response)
+      match.tf(mue.remote(message.err || null), message.response, message)
       return
     }
 
