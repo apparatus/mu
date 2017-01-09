@@ -25,7 +25,7 @@ var mue = require('mu-error')()
  * HTTP transport
  * Figure out path mapping - perhaps this may need to be part of the config for now just /
  */
-module.exports = function createTcpDriver (options) {
+module.exports = function createHttpDriver (options) {
   return function httpDriver (opts, receive) {
     var connections = {}
     var connectionsByIp = {}
@@ -33,6 +33,13 @@ module.exports = function createTcpDriver (options) {
 
     assert(opts, 'transport should always pass opts to httpDriver')
     assert(receive instanceof Function, 'transport should always pass receive function to httpDriver')
+
+    server = options.source && listen(options.source.port, options.source.host, options.ready)
+
+    if (!server && options.ready instanceof Function) {
+      options.ready()
+    }
+
 
 
     function send (message, cb) {
@@ -55,12 +62,10 @@ module.exports = function createTcpDriver (options) {
         var body = []
         var inbound
 
-        // TODO use http agent
         var req = http.request({host: options.target.host,
                                 port: options.target.port,
                                 method: 'POST',
-            // TODO make /mu/
-                                path: '/',
+                                path: '/mu/',
                                 headers: {'Content-Type': 'application/json'}})
 
         req.on('response', function (response) {
@@ -83,17 +88,14 @@ module.exports = function createTcpDriver (options) {
           cb(mue.transport(err))
         })
 
-        req.write(stringify(message))
-        req.end()
+        req.end(stringify(message))
       }
     }
 
 
 
     function listen (port, host, ready) {
-      server = http.createServer()
-
-      server.on('request', function (request, response) {
+      return http.createServer(function (request, response) {
         var body = []
         var inbound
 
@@ -112,9 +114,7 @@ module.exports = function createTcpDriver (options) {
           connectionsByIp[request.socket.remoteAddress + '_' + request.socket.remotePort] = inbound.value.protocol.src
           receive(inbound.err, inbound.value)
         })
-      })
-
-      return server.listen(port, host, ready)
+      }).listen(port, host, ready)
     }
 
 
@@ -133,7 +133,6 @@ module.exports = function createTcpDriver (options) {
       }
       if (server) {
         if (cb) {
-          // TODO remove this
           setImmediate(function () {
             server.close(cb)
           })
@@ -144,12 +143,6 @@ module.exports = function createTcpDriver (options) {
     }
 
 
-
-    server = options.source && listen(options.source.port, options.source.host, options.ready)
-
-    if (!server && options.ready instanceof Function) {
-      options.ready()
-    }
 
     return {
       type: 'http',
