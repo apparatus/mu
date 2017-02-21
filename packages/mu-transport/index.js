@@ -44,17 +44,15 @@ module.exports = function transport (createDriver, mu, opts) {
 
   function constructFailResponse (err, msg) {
     var pkt = { err: err,
-                response: {},
-                protocol: {}}
+      response: {},
+      protocol: {}}
     var elt = muid
 
-    /* istanbul ignore else  */
     if (msg.protocol && msg.protocol.path && msg.protocol.path.length && msg.protocol.path.length > 0) {
       elt = msg.protocol.path[msg.protocol.path.length - 1]
       pkt.protocol.path = msg.protocol.path.slice(0, msg.protocol.path.length - 1)
     }
 
-    /* istanbul ignore else  */
     if (msg.protocol && msg.protocol.trace) {
       pkt.protocol.trace = cloneDeep(msg.protocol.trace)
     }
