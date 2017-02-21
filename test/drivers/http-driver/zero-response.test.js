@@ -15,35 +15,31 @@
 'use strict'
 
 var test = require('tap').test
-var tcp = require('../../../packages/mu-tcp')
-var rcc = require('../../system/consumer/responseCountConsumer')(2)
+var http = require('../../../packages/mu-http')
+var rcc = require('../../system/consumer/responseCountConsumer')()
 var zrs = require('../../system/zeroResponseService/service')
-var mrs = require('../../system/multiResponseService/service')
 
-function initTcp (cb) {
+function initHttp (cb) {
   zrs(function (zero) {
-    zero.inbound('*', tcp.server({port: 3001, host: '127.0.0.1'}))
-    mrs(function (multi) {
-      multi.inbound('*', tcp.server({port: 3002, host: '127.0.0.1'}))
+    zero.inbound('*', http.server({port: 3001, host: '127.0.0.1'}))
+    require('../../system/multiResponseService/service')(function (multi) {
+      multi.inbound('*', http.server({port: 3002, host: '127.0.0.1'}))
       cb(zero, multi)
     })
   })
 }
 
-test('consume services expect two responses', function (t) {
+test('consume services expect no response', function (t) {
   t.plan(1)
-  var count = 0
 
-  initTcp(function (zero, multi) {
-    rcc.mu.outbound({role: 'multi'}, tcp.client({port: 3002, host: '127.0.0.1'}))
-    rcc.consumeMulti(function (countResult) {
-      count = countResult
-    })
-    setTimeout(function () {
-      t.equal(count, 2, 'check service returns two responses')
+  initHttp(function (zero, multi) {
+    rcc.mu.outbound({role: 'zero'}, http.client({port: 3001, host: '127.0.0.1'}))
+    rcc.consumeZero(function (result) {
+      t.equal(true, result)
       multi.tearDown()
       zero.tearDown()
       rcc.mu.tearDown()
-    }, 500)
+    })
   })
 })
+
