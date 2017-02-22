@@ -23,6 +23,9 @@ var zone = {
     },
     'service2.testns.svc.cluster.local': {
       'address': '127.0.0.1'
+    },
+    'redis.testns.svc.cluster.local': {
+      'address': '127.0.0.1'
     }
   },
   'SRV': {
@@ -33,6 +36,10 @@ var zone = {
     '_tcp._tcp.service2.testns.svc.cluster.local': {
       'cname': 'service2.testns.svc.cluster.local',
       'port': '3002'
+    },
+    '_redis._tcp.redis.testns.svc.cluster.local': {
+      'cname': 'redis.testns.svc.cluster.local',
+      'port': '6379'
     }
   }
 }

@@ -24,9 +24,11 @@ var uuid = require('uuid')
 module.exports = function balance (transports) {
   return function adapter (mu, opts) {
     assert(opts)
+
     var direction = opts.direction
     var muid = opts.id || uuid()
     var index = 0
+
     transports = transports.map(function (t) {
       return t(mu, {direction: direction, id: muid})
     })
@@ -35,6 +37,7 @@ module.exports = function balance (transports) {
       direction: transports[0].direction,
       muid: muid,
       tf: tf,
+      tearDown: tearDown,
       type: 'transport'
     }
 
@@ -44,6 +47,18 @@ module.exports = function balance (transports) {
       if (index >= transports.length) {
         index = 0
       }
+    }
+
+    function tearDown (cb) {
+      var count = 0
+      transports.forEach(function (transport) {
+        transport.tearDown(function () {
+          ++count
+          if (count === transports.length) {
+            cb && cb()
+          }
+        })
+      })
     }
   }
 }

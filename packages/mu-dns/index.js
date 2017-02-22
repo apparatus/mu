@@ -15,13 +15,10 @@
 'use strict'
 
 var assert = require('assert')
-var _ = require('lodash')
 var uuid = require('uuid')
-var async = require('async')
-var dns = require('dns')
-var dnsSocket = require('dns-socket')
+var _ = require('lodash')
+var concordant = require('concordant')
 var mue = require('mu-error')()
-
 
 
 /**
@@ -38,14 +35,15 @@ module.exports = function muDns (transport, service) {
     var namespace
     var suffix
     var query
+    var protocol
     var endpoints = []
-    var modeSystem = !process.env.DNS_HOST
     var lookupInterval = process.env.DNS_LOOKUP_INTERVAL || 60
+    var extra
+    var conc = concordant()
 
     assert(transport)
     assert(service)
-    assert(service.portName && service.protocol && service.name)
-
+    assert(service.portName && service.name)
 
 
     function init () {
@@ -55,11 +53,20 @@ module.exports = function muDns (transport, service) {
       suffix = process.env.DNS_SUFFIX || 'svc.cluster.local'
       if (service.suffix) { suffix = service.suffix }
 
-      query = service.portName + '.' + service.protocol + '.' + service.name
+      protocol = '_tcp'
+      if (service.protocol) { protocol = service.protocol }
+
+      query = service.portName + '.' + protocol + '.' + service.name
       if (namespace.length > 0) {
         query += '.' + namespace
       }
       query += '.' + suffix
+
+      extra = _.omit(service, ['portName', 'name'])
+
+      if (direction === 'inbound') {
+        lookup(query, function () {})
+      }
     }
 
 
@@ -67,77 +74,15 @@ module.exports = function muDns (transport, service) {
     function createTransports (endpoints, cb) {
       endpoints.forEach(function (endpoint) {
         if (!endpoint.created) {
-          endpoint.transport = transport.client({port: endpoint.port, host: endpoint.host})(mu, {direction: direction, id: muid})
+          if (direction === 'outbound') {
+            endpoint.transport = transport.client(_.merge({port: endpoint.port, host: endpoint.host}, extra))(mu, {direction: direction, id: muid})
+          } else {
+            endpoint.transport = transport.server(_.merge({port: endpoint.port, host: endpoint.host}, extra))(mu, {direction: direction, id: muid})
+          }
           endpoint.created = true
         }
       })
       cb()
-    }
-
-
-
-    /**
-     * resolve the service endpoint(s) using a specific dns host and port provided through environment variables
-     * DNS_HOST and DNS_PORT
-     */
-    function lookupDirect (cb) {
-      var client = dnsSocket()
-
-      client.query({questions: [{type: 'SRV', name: query}]}, process.env.DNS_PORT, process.env.DNS_HOST, function (err, serviceSRV) {
-        if (err) { return cb(err) }
-
-        if (serviceSRV.answers && serviceSRV.answers.length > 0) {
-          async.eachSeries(serviceSRV.answers, function (answer, next) {
-
-            client.query({questions: [{type: 'A', name: answer.data.target}]}, process.env.DNS_PORT, process.env.DNS_HOST, function (err, serviceA) {
-              if (err) { return next(err) }
-
-              if (serviceA.answers && serviceA.answers.length > 0) {
-                if (!_.find(endpoints, function (endpoint) { return endpoint.host === serviceA.answers[0].data && endpoint.port === answer.data.port })) {
-                  endpoints.push({port: answer.data.port, host: serviceA.answers[0].data})
-                }
-              }
-              next()
-            })
-          }, function (err) {
-            if (err) { return cb(err) }
-            client.destroy()
-            createTransports(endpoints, cb)
-          })
-        } else {
-          client.destroy()
-          cb()
-        }
-      })
-    }
-
-
-
-    /**
-     * resolve the service endpoint(s) using standard system provided lookup mechanism (e.g. /etc/resolv.cong)
-     */
-    function lookupSystem (cb) {
-      dns.resolveSrv(query, function (err, addressesSRV) {
-        if (err) { return cb(err) }
-        if (addressesSRV && addressesSRV.length > 0) {
-          async.eachSeries(addressesSRV, function (addressSRV, next) {
-            dns.resolve4(addressSRV.name, function (err, addressesA) {
-              if (err) { return next(err) }
-              if (addressesA && addressesA.length > 0) {
-                if (!_.find(endpoints, function (endpoint) { return endpoint.host === addressesA[0].address && endpoint.port === addressSRV.port })) {
-                  endpoints.push({port: addressSRV.port, host: addressesA[0].address})
-                }
-              }
-              next()
-            })
-          }, function (err) {
-            if (err) { return cb(err) }
-            createTransports(endpoints, cb)
-          })
-        } else {
-          cb(dns.NODATA)
-        }
-      })
     }
 
 
@@ -152,13 +97,17 @@ module.exports = function muDns (transport, service) {
 
 
 
-    function lookup (cb) {
+    function lookup (query, cb) {
       if (lookupRequired()) {
-        if (modeSystem) {
-          lookupSystem(cb)
-        } else {
-          lookupDirect(cb)
-        }
+        conc.dns.resolve(query, function (err, results) {
+          if (err) { return cb(err) }
+          _.each(results, function (result) {
+            if (!_.find(endpoints, function (endpoint) { return endpoint.host === result.host && endpoint.port === result.port })) {
+              endpoints.push({port: result.port, host: result.host})
+            }
+          })
+          createTransports(endpoints, cb)
+        })
       } else {
         cb()
       }
@@ -167,20 +116,31 @@ module.exports = function muDns (transport, service) {
 
 
     function tf (message, cb) {
-      lookup(function (err) {
+      lookup(query, function (err) {
         if (err) { return cb(mue.transport(err)) }
 
-        if (endpoints.length > 0) {
-          endpoints[index].transport.tf(message, cb)
-          index++
-          if (index >= endpoints.length) {
-            index = 0
-          }
-        } else {
-          cb(mue.transport('mu-dns, no transports available'))
+        endpoints[index] && endpoints[index].transport.tf(message, cb)
+        index++
+        if (index >= endpoints.length) {
+          index = 0
         }
       })
     }
+
+
+
+    function tearDown (cb) {
+      var count = 0
+      endpoints.forEach(function (endpoint) {
+        endpoint.transport.tearDown(function () {
+          ++count
+          if (count === endpoints.length) {
+            cb && cb()
+          }
+        })
+      })
+    }
+
 
 
     init()
@@ -189,6 +149,7 @@ module.exports = function muDns (transport, service) {
       direction: direction,
       muid: muid,
       tf: tf,
+      tearDown: tearDown,
       type: 'transport'
     }
   }

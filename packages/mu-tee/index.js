@@ -35,13 +35,26 @@ module.exports = function tee (transports) {
       tf: tf,
       muid: muid,
       direction: transports[0].direction,
-      type: 'transport'
+      type: 'transport',
+      tearDown: tearDown
     }
 
     function tf (message, cb) {
       for (var index = 0; index < transports.length; ++index) {
         transports[index].tf(cloneDeep(message), cb)
       }
+    }
+
+    function tearDown (cb) {
+      var count = 0
+      transports.forEach(function (transport) {
+        transport.tearDown(function () {
+          ++count
+          if (count === transports.length) {
+            cb && cb()
+          }
+        })
+      })
     }
   }
 }

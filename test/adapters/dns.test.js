@@ -23,7 +23,8 @@ var dnsMock = require('./support/dns.stub.js')()
 var service1 = require('../system/service1/service')
 var service2 = require('../system/service2/service')
 
-var dns = proxyquire('../../packages/mu-dns', {dns: dnsMock.systemStub})
+proxyquire('concordant/dnsResolver', {dns: dnsMock.systemStub})
+var dns = require('../../packages/mu-dns')
 
 
 function init (cb) {
@@ -199,7 +200,7 @@ test('test fail lookup with development dns', function (t) {
         mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
           setTimeout(function () {
             t.notequal(null, err, 'test error condition on bad lookup')
-            t.equal(err.output.mu.message, 'mu-dns, no transports available', 'test that error is no transports available')
+            t.equal(err.output.mu.message, 'ENODATA', 'test that error is no data from dns')
             mu.tearDown()
             s1.tearDown()
             dnsMock.stop()

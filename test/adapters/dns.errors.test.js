@@ -20,8 +20,8 @@ var tcp = require('../../packages/mu-tcp')
 var proxyquire = require('proxyquire')
 var dnsMock = require('./support/dns.stub.js')()
 var service1 = require('../system/service1/service')
-var dns = proxyquire('../../packages/mu-dns', {dns: dnsMock.systemStub, 'dns-socket': dnsMock.dnsErrorSocketStub})
-
+proxyquire('concordant/dnsResolver', {dns: dnsMock.systemStub, 'dns-socket': dnsMock.dnsErrorSocketStub})
+var dns = require('../../packages/mu-dns')
 
 function initS1 (cb) {
   service1(function (s1) {
@@ -114,7 +114,7 @@ test('test error on lookup with development dns SRV', function (t) {
     mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
       setTimeout(function () {
         t.notequal(null, err, 'test error condition on bad lookup')
-        t.equal(err.output.mu.message, 'force error on SRV', 'test that error is no transports available')
+        t.equal(err.output.mu.message, 'force error on SRV', 'test that error is no data from dns')
         mu.tearDown()
         s1.tearDown()
       }, 100)

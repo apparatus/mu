@@ -22,7 +22,7 @@ var parallel = require('fastparallel')()
 var MALFORMED_PACKET = 'Malformed packet no pattern or response field. Message will be discarded'
 var NO_MATCHING_ROUTE = 'Routing error: no matching route and no default route provided, Message will be discarded'
 var INVALID_OUTBOUND_ROUTE = 'Routing error: no valid outbound route available. Message will be discarded'
-var NO_AVAILABLE_TRANSPORT = 'Routing error: no available response transport function'
+var NO_AVAILABLE_TRANSPORT = 'Routing error: no available transport function'
 
 /**
  * pattern router. responsible for the routing table
@@ -92,7 +92,9 @@ module.exports = function (opts) {
       return
     }
 
-    list.forEach(function (tearDown) { tearDown() })
+    list.forEach(function (tearDown) {
+      tearDown(cb)
+    })
   }
 
   function transports () {
@@ -120,6 +122,7 @@ module.exports = function (opts) {
     var match = run.lookup(message.pattern)
 
     if (!match) {
+
       // unable to find a route, discard message
       logger.error(NO_AVAILABLE_TRANSPORT)
       logger.debug(message, 'discarded message')

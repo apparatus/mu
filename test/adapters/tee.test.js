@@ -40,13 +40,10 @@ test('consume services with tcp tee adapter', function (t) {
       t.equal(null, err)
       mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
         t.equal(null, err)
+        mu.tearDown(function () {})
+        s1.tearDown()
+        s2.tearDown()
       })
     })
-
-    setTimeout(function () {
-      mu.tearDown()
-      s1.tearDown()
-      s2.tearDown()
-    }, 1500)
   })
 })
