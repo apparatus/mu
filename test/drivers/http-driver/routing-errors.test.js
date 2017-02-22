@@ -17,7 +17,7 @@
 var test = require('tap').test
 var createMu = require('../../../packages/mu')
 var http = require('../../../packages/mu-http')
-var NO_AVAILABLE_TRANSPORT = 'Routing error: no available response transport function'
+var NO_AVAILABLE_TRANSPORT = 'Routing error: no available transport function'
 
 var s1 = createMu()
 

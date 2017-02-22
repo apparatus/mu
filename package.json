@@ -26,7 +26,7 @@
     "clean": "lerna clean",
     "release": "lerna publish -i",
     "lint": "echo 'linting...' && spacey-standard | snazzy",
-    "test": "tap 'test/**/*.test.js' 'packages/*/test/*.js' --branches=90 --statements=90 --functions=90 --lines=90",
+    "test": "tap 'test/**/*.test.js' 'packages/*/test/*.js' --branches=90 --statements=90 --functions=90 --lines=90 2>/dev/null",
     "check": "npm run test && npm run lint",
     "ci": "npm run setup && npm run check",
     "coverage": "npm run test -- --cov --coverage-report=html",
@@ -40,11 +40,12 @@
   "devDependencies": {
     "coveralls": "^2.11.14",
     "fakeredis": "^1.0.3",
+    "lerna": "2.0.0-beta.30",
     "pre-commit": "^1.1.3",
+    "proxyquire": "^1.7.10",
     "snazzy": "^5.0.0",
     "spacey-standard": "^3.0.0",
-    "tap": "^7.1.2",
-    "lerna": "2.0.0-beta.30"
+    "tap": "^7.1.2"
   },
   "pre-commit": [
     "check"

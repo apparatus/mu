@@ -1,0 +1,33 @@
+{
+  "name": "mu-dns",
+  "version": "1.0.0",
+  "description": "The official dns discovery adapter for mu",
+  "main": "index.js",
+  "keywords": [
+    "mu",
+    "transport",
+    "microservices",
+    "messaging",
+    "router",
+    "distributed",
+    "dns",
+    "service",
+    "discovery"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apparatus/mu.git"
+  },
+  "author": "Peter Elger (https://github.com/pelger)",
+  "contributors": [],
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.1.4",
+    "dns-socket": "^1.4.2",
+    "uuid": "^3.0.1"
+  },
+  "devDependencies": {
+    "abstract-logging": "^1.0.0",
+    "mu": "^2.0.5"
+  }
+}
