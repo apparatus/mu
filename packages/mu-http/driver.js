@@ -63,10 +63,10 @@ module.exports = function createHttpDriver (options) {
         var inbound
 
         var req = http.request({host: options.target.host,
-                                port: options.target.port,
-                                method: 'POST',
-                                path: '/mu/',
-                                headers: {'Content-Type': 'application/json'}})
+          port: options.target.port,
+          method: 'POST',
+          path: '/mu/',
+          headers: {'Content-Type': 'application/json'}})
 
         req.on('response', function (response) {
           response.on('data', function (chunk) {
@@ -106,6 +106,8 @@ module.exports = function createHttpDriver (options) {
         request.on('end', function () {
           inbound = parse(Buffer.concat(body))
 
+          assert(inbound.value.protocol.src)
+
           if (!connections[inbound.value.protocol.src]) {
             connections[inbound.value.protocol.src] = []
             connectionsByIp[request.socket.remoteAddress + '_' + request.socket.remotePort] = []
@@ -133,6 +135,8 @@ module.exports = function createHttpDriver (options) {
       }
       if (server) {
         if (cb) {
+
+          // should not be needed investigate
           setImmediate(function () {
             server.close(cb)
           })
