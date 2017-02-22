@@ -1,6 +1,6 @@
 {
   "name": "mu",
-  "version": "2.0.5",
+  "version": "2.1.0",
   "description": "A message-pattern based router for building distributed systems",
   "main": "index.js",
   "keywords": [
@@ -25,9 +25,15 @@
     "bloomrun": "^3.0.0",
     "fast-safe-stringify": "^1.1.3",
     "mu-error": "^1.4.5",
-    "mu-local": "^1.0.4",
-    "mu-router": "^1.0.4",
-    "mu-tcp": "^1.0.4",
+    "mu-router": "^1.0.5",
+    "mu-transport": "^1.0.5",
+    "mu-local": "^1.0.5",
+    "mu-tcp": "^1.0.5",
+    "mu-http": "^1.0.1",
+    "mu-redis": "^1.0.5",
+    "mu-dns": "^1.0.1",
+    "mu-balance": "^1.0.4",
+    "mu-tee": "^1.0.4",
     "pino": "^3.0.1",
     "uuid": "^3.0.0"
   }
