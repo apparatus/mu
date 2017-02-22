@@ -15,18 +15,18 @@
 'use strict'
 
 var transport = require('mu-transport')
-var redisDriver = require('./driver')
+var driver = require('./driver')
 
 module.exports = {
   server: function server (source) {
-    return function driver (mu, opts) {
-      var drv = redisDriver({source: source, id: opts.id})
+    return function redisDriver (mu, opts) {
+      var drv = driver({source: source, id: opts.id})
       return transport(drv, mu, opts)
     }
   },
   client: function client (target) {
-    return function driver (mu, opts) {
-      var drv = redisDriver({target: target, id: opts.id})
+    return function redisDriver (mu, opts) {
+      var drv = driver({target: target, id: opts.id})
       return transport(drv, mu, opts)
     }
   }

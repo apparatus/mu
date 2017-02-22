@@ -17,6 +17,8 @@
 var EventEmitter = require('events')
 var stringify = require('fast-safe-stringify')
 var assert = require('assert')
+var redis = require('redis')
+
 
 /**
  * options
@@ -33,26 +35,15 @@ module.exports = function createRedisDriver (options) {
   return function redisDriver (opts, cb) {
     var emitter = new EventEmitter()
     var tearingDown = false
-    var redis
     var rin = null
     var rout = null
 
-    if (opts instanceof Function) {
-      cb = opts
-    }
-    opts = opts || {}
+    assert(opts, 'transport should always pass opts to redis driver')
+    assert(cb, 'transport should always pass cb to redis driver')
 
     emitter.on('receive', cb)
 
     assert(options, 'redis driver requires an options object')
-
-    if (options.source && options.source.redis) {
-      redis = options.source.redis
-    } else if (options.target && options.target.redis) {
-      redis = options.target.redis
-    } else {
-      redis = require('redis')
-    }
 
     if (options.target) {
       rin = redis.createClient(options.target.port, options.target.host)
@@ -71,6 +62,8 @@ module.exports = function createRedisDriver (options) {
       tearDown: tearDown
     }
 
+
+
     function listen (cb) {
       var listName
 
@@ -78,11 +71,12 @@ module.exports = function createRedisDriver (options) {
         listName = options.source.list + '_req'
       }
       if (options.target) {
-        listName = options.target.list + '_res'
+        // listName = options.target.list + '_res'
+        listName = options.target.list + '_res_' + opts.id
       }
 
       var brpopQueue = function () {
-        rin.brpop(listName, 1, function (err, data) {
+        rin.brpop(listName, 5, function (err, data) {
           if (cb && err) {
             return cb(err)
           } else if (data) {
@@ -97,23 +91,27 @@ module.exports = function createRedisDriver (options) {
       brpopQueue()
     }
 
+
+
     function send (message, cb) {
       if (options.source) {
-        rout.lpush(options.source.list + '_res', stringify(message), function (err) {
-          cb(err)
+        rout.lpush(options.source.list + '_res_' + message.protocol.dst, stringify(message), function (err) {
+          cb && cb(err)
         })
       }
       if (options.target) {
         rout.lpush(options.target.list + '_req', stringify(message), function (err) {
-          cb(err)
+          cb && cb(err)
         })
       }
     }
 
+
+
     function tearDown () {
       tearingDown = true
-      rin.quit()
-      rout.quit()
+      rin.end(true)
+      rout.end(true)
     }
   }
 }
