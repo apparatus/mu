@@ -26,7 +26,7 @@
     "clean": "lerna clean",
     "release": "lerna publish -i",
     "lint": "echo 'linting...' && spacey-standard | snazzy",
-    "test": "tap 'test/**/*.test.js' 'packages/*/test/*.js' --branches=90 --statements=90 --functions=90 --lines=90",
+    "test": "tap 'test/**/*.test.js' 'packages/*/test/*.js' --branches=90 --statements=90 --functions=90 --lines=90 2>/dev/null",
     "check": "npm run test && npm run lint",
     "ci": "npm run setup && npm run check",
     "coverage": "npm run test -- --cov --coverage-report=html",

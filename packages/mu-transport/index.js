@@ -44,8 +44,8 @@ module.exports = function transport (createDriver, mu, opts) {
 
   function constructFailResponse (err, msg) {
     var pkt = { err: err,
-                response: {},
-                protocol: {}}
+      response: {},
+      protocol: {}}
     var elt = muid
 
     /* istanbul ignore else  */
