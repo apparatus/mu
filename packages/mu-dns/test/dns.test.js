@@ -15,16 +15,16 @@
 'use strict'
 
 var test = require('tap').test
-var mu = require('../../packages/mu')()
-var tcp = require('../../packages/mu-tcp')
+var mu = require('../../mu')()
+var tcp = require('../../mu-tcp')
 var proxyquire = require('proxyquire')
 
 var dnsMock = require('./support/dns.stub.js')()
-var service1 = require('../system/service1/service')
-var service2 = require('../system/service2/service')
+var service1 = require('../../../test/system/service1/service')
+var service2 = require('../../../test/system/service2/service')
 
 proxyquire('concordant/dnsResolver', {dns: dnsMock.systemStub})
-var dns = require('../../packages/mu-dns')
+var dns = require('../index')
 
 
 function init (cb) {
