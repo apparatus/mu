@@ -1,6 +1,6 @@
 {
   "name": "mu-transport",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "The official protocol implementation and transport driver factory used internally by mu",
   "main": "index.js",
   "keywords": [
@@ -28,6 +28,6 @@
   },
   "devDependencies": {
     "abstract-logging": "^1.0.0",
-    "mu": "^2.1.0"
+    "mu": "^2.1.1"
   }
 }
