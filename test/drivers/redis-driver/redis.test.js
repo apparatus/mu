@@ -17,8 +17,8 @@
 var test = require('tap').test
 var proxyquire = require('proxyquire')
 var redisMock = require('fakeredis')
-var driver = proxyquire('mu-redis/driver', {redis: redisMock})
-var rdis = proxyquire('mu-redis', {driver: driver})
+var driver = proxyquire('../../../packages/mu-redis/driver', {redis: redisMock})
+var rdis = proxyquire('../../../packages/mu-redis', {driver: driver})
 
 // write separate redis test 2 senders 1 reciever sendres to send 100x each and ensure that each gets back exactly
 // correct response -> count and validate

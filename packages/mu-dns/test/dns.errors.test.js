@@ -15,7 +15,7 @@
 'use strict'
 
 var test = require('tap').test
-var mu = require('../../mu')()
+var Mu = require('../../mu')
 var tcp = require('../../mu-tcp')
 var proxyquire = require('proxyquire')
 var dnsMock = require('./support/dns.stub.js')()
@@ -33,6 +33,7 @@ function initS1 (cb) {
 
 test('test error lookup with system dns', function (t) {
   t.plan(2)
+  var mu = Mu()
 
   process.env.DNS_LOOKUP_INTERVAL = 60
 
@@ -55,6 +56,7 @@ test('test error lookup with system dns', function (t) {
 
 test('test error lookup with system dns', function (t) {
   t.plan(2)
+  var mu = Mu()
 
   process.env.DNS_NAMESPACE = 'testns'
   process.env.DNS_LOOKUP_INTERVAL = 60
@@ -78,6 +80,7 @@ test('test error lookup with system dns', function (t) {
 
 test('test error lookup with system dns', function (t) {
   t.plan(2)
+  var mu = Mu()
 
   process.env.DNS_NAMESPACE = 'testns'
   process.env.DNS_LOOKUP_INTERVAL = 60
@@ -102,6 +105,7 @@ test('test error lookup with system dns', function (t) {
 
 test('test error on lookup with development dns SRV', function (t) {
   t.plan(2)
+  var mu = Mu()
 
   process.env.DNS_NAMESPACE = 'testns'
   process.env.DNS_PORT = 53053
@@ -125,6 +129,7 @@ test('test error on lookup with development dns SRV', function (t) {
 
 test('test error on lookup with development dns A', function (t) {
   t.plan(2)
+  var mu = Mu()
 
   process.env.DNS_NAMESPACE = 'testns'
   process.env.DNS_PORT = 53053
