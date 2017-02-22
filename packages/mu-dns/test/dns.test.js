@@ -15,7 +15,8 @@
 'use strict'
 
 var test = require('tap').test
-var mu = require('../../mu')()
+// var mu = require('../../mu')()
+var Mu = require('../../mu')
 var tcp = require('../../mu-tcp')
 var proxyquire = require('proxyquire')
 
@@ -49,6 +50,7 @@ function initS1 (cb) {
 
 test('consume services with system dns lookup', function (t) {
   t.plan(3)
+  var mu = Mu()
 
   process.env.DNS_NAMESPACE = 'testns'
 
@@ -71,9 +73,9 @@ test('consume services with system dns lookup', function (t) {
 })
 
 
-
 test('consume services with system dns lookup adjusting lookup interval', function (t) {
   t.plan(3)
+  var mu = Mu()
 
   process.env.DNS_NAMESPACE = 'testns'
   process.env.DNS_LOOKUP_INTERVAL = 0
@@ -99,61 +101,67 @@ test('consume services with system dns lookup adjusting lookup interval', functi
 })
 
 
-
 test('test fail lookup with system dns', function (t) {
   t.plan(2)
+  var mu = Mu()
 
   process.env.DNS_NAMESPACE = 'testns'
   process.env.DNS_LOOKUP_INTERVAL = 60
 
-  initS1(function (s1) {
-    mu.outbound({role: 's1'}, dns(tcp, {portName: '_tcp', protocol: '_tcp', name: 'wibble'}))
-    mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
-      setTimeout(function () {
-        t.notequal(null, err, 'test error condition on bad lookup')
-        t.equal(err.output.mu.message, 'ENODATA', 'test that error is no data from dns')
-        mu.tearDown()
-        s1.tearDown()
-      }, 100)
+  setTimeout(function () {
+    initS1(function (s1) {
+      mu.outbound({role: 's1'}, dns(tcp, {portName: '_tcp', protocol: '_tcp', name: 'wibble'}))
+      mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
+        setTimeout(function () {
+          t.notequal(null, err, 'test error condition on bad lookup')
+          t.equal(err.output.mu.message, 'ENODATA', 'test that error is no data from dns')
+          mu.tearDown()
+          s1.tearDown()
+        }, 100)
+      })
     })
-  })
+  }, 100)
 })
 
 
 
 test('consume services with development dns server', function (t) {
   t.plan(3)
+  var mu = Mu()
 
   process.env.DNS_NAMESPACE = 'testns'
   process.env.DNS_PORT = 53053
   process.env.DNS_HOST = '127.0.0.1'
   process.env.DNS_LOOKUP_INTERVAL = 60
 
-  dnsMock.start(function () {
-    init(function (s1, s2) {
-      mu.outbound({role: 's1'}, dns(tcp, {portName: '_tcp', protocol: '_tcp', name: 'service1'}))
-      mu.outbound({role: 's2'}, dns(tcp, {portName: '_tcp', protocol: '_tcp', name: 'service2'}))
-      mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
-        t.equal(null, err, 'test no error on lookup and consume service1')
-        mu.dispatch({role: 's2', cmd: 'two', fish: 'cheese'}, function (err, result) {
-          t.equal(null, err, 'test no error on lookup and consume service2')
+  setTimeout(function () {
+    dnsMock.start(function () {
+      init(function (s1, s2) {
+        mu.outbound({role: 's1'}, dns(tcp, {portName: '_tcp', protocol: '_tcp', name: 'service1'}))
+        mu.outbound({role: 's2'}, dns(tcp, {portName: '_tcp', protocol: '_tcp', name: 'service2'}))
+        mu.dispatch({role: 's1', cmd: 'two', fish: 'cheese'}, function (err, result) {
+          t.equal(null, err, 'test no error on lookup and consume service1')
           mu.dispatch({role: 's2', cmd: 'two', fish: 'cheese'}, function (err, result) {
             t.equal(null, err, 'test no error on lookup and consume service2')
-            mu.tearDown()
-            s1.tearDown()
-            s2.tearDown()
-            dnsMock.stop()
+            mu.dispatch({role: 's2', cmd: 'two', fish: 'cheese'}, function (err, result) {
+              t.equal(null, err, 'test no error on lookup and consume service2')
+              mu.tearDown()
+              s1.tearDown()
+              s2.tearDown()
+              dnsMock.stop()
+            })
           })
         })
       })
     })
-  })
+  }, 100)
 })
 
 
 
 test('consume services with development dns server adjusting lookup interval', function (t) {
   t.plan(3)
+  var mu = Mu()
 
   process.env.DNS_NAMESPACE = 'testns'
   process.env.DNS_PORT = 53053
@@ -187,6 +195,7 @@ test('consume services with development dns server adjusting lookup interval', f
 
 test('test fail lookup with development dns', function (t) {
   t.plan(2)
+  var mu = Mu()
 
   process.env.DNS_NAMESPACE = 'testns'
   process.env.DNS_PORT = 53053
