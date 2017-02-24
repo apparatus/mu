@@ -24,7 +24,8 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "fast-safe-stringify": "^1.1.1",
     "mu-transport": "^1.0.7",
-    "fast-safe-stringify": "^1.1.1"
+    "redis": "^2.6.5"
   }
 }
