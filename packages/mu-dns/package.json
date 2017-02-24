@@ -1,6 +1,6 @@
 {
   "name": "mu-dns",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "The official dns discovery adapter for mu",
   "main": "index.js",
   "keywords": [
@@ -31,6 +31,6 @@
   "devDependencies": {
     "abstract-logging": "^1.0.0",
     "fuge-dns": "^0.2.0",
-    "mu": "^2.1.2"
+    "mu": "^2.1.3"
   }
 }

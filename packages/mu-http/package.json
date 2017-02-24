@@ -1,6 +1,6 @@
 {
   "name": "mu-http",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "index.js",
   "keywords": [
@@ -27,6 +27,6 @@
     "fast-json-parse": "^1.0.2",
     "fast-safe-stringify": "^1.1.1",
     "mu-error": "^1.4.5",
-    "mu-transport": "^1.0.7"
+    "mu-transport": "^1.0.8"
   }
 }
