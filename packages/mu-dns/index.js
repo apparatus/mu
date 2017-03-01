@@ -47,7 +47,7 @@ module.exports = function muDns (transport, service) {
 
 
     function init () {
-      namespace = process.env.DNS_NAMESPACE || ''
+      namespace = process.env.DNS_NAMESPACE || 'default'
       if (service.namespace) { namespace = service.namespace }
 
       suffix = process.env.DNS_SUFFIX || 'svc.cluster.local'
